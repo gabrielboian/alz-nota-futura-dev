@@ -1,0 +1,373 @@
+[
+  {
+    "model": "core.branch",
+    "pk": "263f100b-f844-43b3-ae86-81e4e460226b",
+    "fields": {
+      "sap_code": "3502",
+      "state": "BA",
+      "cnpj": "10.962.697/0002-16",
+      "description": "ARM - CORRENTINA/BA",
+      "type": "warehouse",
+      "created_at": "2026-04-22T15:54:40.753725+00:00",
+      "updated_at": "2026-04-22T15:54:40.753725+00:00"
+    }
+  },
+  {
+    "model": "core.branch",
+    "pk": "3aa2217b-e145-4abd-bfb9-8f6879e141d3",
+    "fields": {
+      "sap_code": "3503",
+      "state": "MA",
+      "cnpj": "10.962.697/0003-05",
+      "description": "ESC - BALSAS/MA",
+      "type": "office",
+      "created_at": "2026-04-22T15:54:40.753725+00:00",
+      "updated_at": "2026-04-22T15:54:40.753725+00:00"
+    }
+  },
+  {
+    "model": "core.branch",
+    "pk": "7eac67f6-ee83-4ec1-aa55-41dc77aebd07",
+    "fields": {
+      "sap_code": "3504",
+      "state": "TO",
+      "cnpj": "10.962.697/0004-88",
+      "description": "ESC - GUARAÍ/TO",
+      "type": "office",
+      "created_at": "2026-04-22T15:54:40.753725+00:00",
+      "updated_at": "2026-04-22T15:54:40.753725+00:00"
+    }
+  },
+  {
+    "model": "core.branch",
+    "pk": "c8900bfb-4217-4dcb-ab01-d2d6af65350e",
+    "fields": {
+      "sap_code": "3505",
+      "state": "BA",
+      "cnpj": "10.962.697/0005-69",
+      "description": "ESC - LEM/BA",
+      "type": "office",
+      "created_at": "2026-04-22T15:54:40.753725+00:00",
+      "updated_at": "2026-04-22T15:54:40.753725+00:00"
+    }
+  },
+  {
+    "model": "core.branch",
+    "pk": "bbb96589-e292-4a68-9af3-9d777d59024d",
+    "fields": {
+      "sap_code": "3507",
+      "state": "BA",
+      "cnpj": "10.962.697/0007-20",
+      "description": "ARM - COACERAL/BA",
+      "type": "warehouse",
+      "created_at": "2026-04-22T15:54:40.753725+00:00",
+      "updated_at": "2026-04-22T15:54:40.753725+00:00"
+    }
+  },
+  {
+    "model": "core.branch",
+    "pk": "c4506a76-2c8d-411c-b8c1-f9efea1de7a0",
+    "fields": {
+      "sap_code": "3508",
+      "state": "MA",
+      "cnpj": "10.962.697/0008-01",
+      "description": "ARM - BALSAS (PDG)/MA",
+      "type": "warehouse",
+      "created_at": "2026-04-22T15:54:40.753725+00:00",
+      "updated_at": "2026-04-22T15:54:40.753725+00:00"
+    }
+  },
+  {
+    "model": "core.branch",
+    "pk": "40eee634-0914-4142-9f68-a34f851e4387",
+    "fields": {
+      "sap_code": "3509",
+      "state": "TO",
+      "cnpj": "10.962.697/0009-92",
+      "description": "ESC - PALMAS/TO",
+      "type": "office",
+      "created_at": "2026-04-22T15:54:40.753725+00:00",
+      "updated_at": "2026-04-22T15:54:40.753725+00:00"
+    }
+  },
+  {
+    "model": "core.branch",
+    "pk": "635059ab-c918-48a5-996b-6ecddb12e8c5",
+    "fields": {
+      "sap_code": "3510",
+      "state": "PI",
+      "cnpj": "10.962.697/0010-26",
+      "description": "ARM - NOVA STA. ROSA (URUÇUÍ)/PI",
+      "type": "warehouse",
+      "created_at": "2026-04-22T15:54:40.753725+00:00",
+      "updated_at": "2026-04-22T15:54:40.753725+00:00"
+    }
+  },
+  {
+    "model": "core.branch",
+    "pk": "03c2057f-b77a-4184-b2cd-d0ccd067d5e4",
+    "fields": {
+      "sap_code": "3511",
+      "state": "TO",
+      "cnpj": "10.962.697/0011-07",
+      "description": "ARM - FIGUEIRÓPOLIS/TO",
+      "type": "warehouse",
+      "created_at": "2026-04-22T15:54:40.753725+00:00",
+      "updated_at": "2026-04-22T15:54:40.753725+00:00"
+    }
+  },
+  {
+    "model": "core.branch",
+    "pk": "bd52e7cc-3942-456d-a1fc-84ef28674a99",
+    "fields": {
+      "sap_code": "3516",
+      "state": "BA",
+      "cnpj": "10.962.697/0016-11",
+      "description": "MATRIZ - LEM/BA",
+      "type": "warehouse",
+      "created_at": "2026-04-22T15:54:40.753725+00:00",
+      "updated_at": "2026-04-22T15:54:40.753725+00:00"
+    }
+  },
+  {
+    "model": "core.branch",
+    "pk": "a5ce7d4f-e7d4-4281-88b4-5b36e006a40e",
+    "fields": {
+      "sap_code": "3517",
+      "state": "TO",
+      "cnpj": "10.962.697/0017-00",
+      "description": "PORTO NACIONAL/TO",
+      "type": "warehouse",
+      "created_at": "2026-04-22T15:54:40.753725+00:00",
+      "updated_at": "2026-04-22T15:54:40.753725+00:00"
+    }
+  },
+  {
+    "model": "core.branch",
+    "pk": "df8b8c9c-c6ed-44fe-94df-36cfbabde802",
+    "fields": {
+      "sap_code": "3518",
+      "state": "TO",
+      "cnpj": "10.962.697/0018-83",
+      "description": "MARIANOPOLIS/TO",
+      "type": "warehouse",
+      "created_at": "2026-04-22T15:54:40.753725+00:00",
+      "updated_at": "2026-04-22T15:54:40.753725+00:00"
+    }
+  },
+  {
+    "model": "core.branch",
+    "pk": "b13c3aba-eb30-44d7-9365-448e7402811f",
+    "fields": {
+      "sap_code": "3519",
+      "state": "TO",
+      "cnpj": "10.962.697/0018-83",
+      "description": "SILVANÓPOLIS",
+      "type": "warehouse",
+      "created_at": "2026-04-22T15:54:40.753725+00:00",
+      "updated_at": "2026-04-22T15:54:40.753725+00:00"
+    }
+  },
+  {
+    "model": "core.terminaldestination",
+    "pk": "1eb7f392-908d-46f7-be19-edb3ab53a3fb",
+    "fields": {
+      "name": "Aratu-TPC",
+      "sap_client_code": "",
+      "sap_supplier_code": "",
+      "created_at": "2026-04-22T15:54:40.753725+00:00",
+      "updated_at": "2026-04-22T15:54:40.753725+00:00"
+    }
+  },
+  {
+    "model": "core.terminaldestination",
+    "pk": "23ed9819-321b-4c2a-b656-2a274a408963",
+    "fields": {
+      "name": "VLI-Porto Nacional",
+      "sap_client_code": "",
+      "sap_supplier_code": "",
+      "created_at": "2026-04-22T15:54:40.753725+00:00",
+      "updated_at": "2026-04-22T15:54:40.753725+00:00"
+    }
+  },
+  {
+    "model": "core.terminaldestination",
+    "pk": "1f0bbf17-730c-4938-9b63-d9b8396ae20a",
+    "fields": {
+      "name": "VLI-Palmeirante",
+      "sap_client_code": "",
+      "sap_supplier_code": "",
+      "created_at": "2026-04-22T15:54:40.753725+00:00",
+      "updated_at": "2026-04-22T15:54:40.753725+00:00"
+    }
+  },
+  {
+    "model": "core.terminaldestination",
+    "pk": "2073dff4-f564-4c36-abb7-25bbee5c835b",
+    "fields": {
+      "name": "ALZ-Terminais Portuários",
+      "sap_client_code": "",
+      "sap_supplier_code": "",
+      "created_at": "2026-04-22T15:54:40.753725+00:00",
+      "updated_at": "2026-04-22T15:54:40.753725+00:00"
+    }
+  },
+  {
+    "model": "core.terminaldestination",
+    "pk": "fd139ece-4406-488b-8187-6a359585bb7d",
+    "fields": {
+      "name": "TCN-Terminal Corredor Norte",
+      "sap_client_code": "",
+      "sap_supplier_code": "",
+      "created_at": "2026-04-22T15:54:40.753725+00:00",
+      "updated_at": "2026-04-22T15:54:40.753725+00:00"
+    }
+  },
+  {
+    "model": "core.terminaldestination",
+    "pk": "f30f5548-0e72-4d74-8b99-2604a8029330",
+    "fields": {
+      "name": "ARMZ-3517-PNA",
+      "sap_client_code": "",
+      "sap_supplier_code": "",
+      "created_at": "2026-04-22T15:54:40.753725+00:00",
+      "updated_at": "2026-04-22T15:54:40.753725+00:00"
+    }
+  },
+  {
+    "model": "core.terminaldestination",
+    "pk": "910f8c20-f967-4437-b2a8-0610da7db62e",
+    "fields": {
+      "name": "Viterra",
+      "sap_client_code": "",
+      "sap_supplier_code": "",
+      "created_at": "2026-04-22T15:54:40.753725+00:00",
+      "updated_at": "2026-04-22T15:54:40.753725+00:00"
+    }
+  },
+  {
+    "model": "core.terminaldestination",
+    "pk": "5fef1621-79e0-47f7-94f5-6e2166be1186",
+    "fields": {
+      "name": "ARMZ-3508-PDG",
+      "sap_client_code": "",
+      "sap_supplier_code": "",
+      "created_at": "2026-04-22T15:54:40.753725+00:00",
+      "updated_at": "2026-04-22T15:54:40.753725+00:00"
+    }
+  },
+  {
+    "model": "core.terminaldestination",
+    "pk": "6282bca0-b23d-4a32-a61e-c43efdd39689",
+    "fields": {
+      "name": "VLI-Porto Franco",
+      "sap_client_code": "",
+      "sap_supplier_code": "",
+      "created_at": "2026-04-22T15:54:40.753725+00:00",
+      "updated_at": "2026-04-22T15:54:40.753725+00:00"
+    }
+  },
+  {
+    "model": "core.corridor",
+    "pk": "c0000000-0000-0000-0000-000000000001",
+    "fields": {
+      "code": "NORTE",
+      "name": "Corredor Norte",
+      "description": "Itaqui / Barcarena",
+      "created_at": "2026-04-22T15:54:40.753725+00:00",
+      "updated_at": "2026-04-22T15:54:40.753725+00:00"
+    }
+  },
+  {
+    "model": "core.corridor",
+    "pk": "c0000000-0000-0000-0000-000000000002",
+    "fields": {
+      "code": "SUL",
+      "name": "Corredor Sul",
+      "description": "Paranaguá / Rio Grande",
+      "created_at": "2026-04-22T15:54:40.753725+00:00",
+      "updated_at": "2026-04-22T15:54:40.753725+00:00"
+    }
+  },
+  {
+    "model": "core.corridor",
+    "pk": "c0000000-0000-0000-0000-000000000003",
+    "fields": {
+      "code": "SUDESTE",
+      "name": "Corredor Sudeste",
+      "description": "Santos / Vitória",
+      "created_at": "2026-04-22T15:54:40.753725+00:00",
+      "updated_at": "2026-04-22T15:54:40.753725+00:00"
+    }
+  },
+  {
+    "model": "core.participant",
+    "pk": "a1000000-0000-0000-0000-000000000001",
+    "fields": {
+      "name": "ALZ Grãos S/A",
+      "sap_code": "100001",
+      "inscricao_estadual": "123.456.789.000",
+      "cnpj": "12.345.678/0001-00",
+      "created_at": "2026-04-22T15:54:40.753725+00:00",
+      "updated_at": "2026-04-22T15:54:40.753725+00:00"
+    }
+  },
+  {
+    "model": "core.participant",
+    "pk": "a1000000-0000-0000-0000-000000000002",
+    "fields": {
+      "name": "Cargill Agrícola",
+      "sap_code": "100002",
+      "inscricao_estadual": "987.654.321.000",
+      "cnpj": "98.765.432/0001-00",
+      "created_at": "2026-04-22T15:54:40.753725+00:00",
+      "updated_at": "2026-04-22T15:54:40.753725+00:00"
+    }
+  },
+  {
+    "model": "core.commercialresponsible",
+    "pk": "d0000000-0000-0000-0000-000000000001",
+    "fields": {
+      "name": "João Comercial",
+      "state": "MT",
+      "branch": null,
+      "corporate_phone": "(65) 9 9999-0000",
+      "email": "joao@alz.com.br",
+      "created_at": "2026-04-22T15:54:40.753725+00:00",
+      "updated_at": "2026-04-22T15:54:40.753725+00:00"
+    }
+  },
+  {
+    "model": "core.commercialresponsible",
+    "pk": "d0000000-0000-0000-0000-000000000002",
+    "fields": {
+      "name": "Maria Comercial",
+      "state": "GO",
+      "branch": null,
+      "corporate_phone": "(62) 9 8888-0000",
+      "email": "maria@alz.com.br",
+      "created_at": "2026-04-22T15:54:40.753725+00:00",
+      "updated_at": "2026-04-22T15:54:40.753725+00:00"
+    }
+  },
+  {
+    "model": "core.transshipmentlocation",
+    "pk": "b1000000-0000-0000-0000-000000000001",
+    "fields": {
+      "name": "Transbordo Rondonópolis",
+      "branch": null,
+      "created_at": "2026-04-22T15:54:40.753725+00:00",
+      "updated_at": "2026-04-22T15:54:40.753725+00:00"
+    }
+  },
+  {
+    "model": "core.transshipmentlocation",
+    "pk": "b1000000-0000-0000-0000-000000000002",
+    "fields": {
+      "name": "Transbordo Sorriso",
+      "branch": null,
+      "created_at": "2026-04-22T15:54:40.753725+00:00",
+      "updated_at": "2026-04-22T15:54:40.753725+00:00"
+    }
+  }
+]

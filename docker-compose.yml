@@ -1,0 +1,53 @@
+# Docker Compose for testing on Ubuntu host.
+# Set HOST_IP to the IP/hostname your RPA will use to reach this machine.
+# Open ports 3000 and 8001 on the Ubuntu firewall (e.g. `ufw allow 3000` and `ufw allow 8001`).
+#
+# Usage:
+#   HOST_IP=192.168.0.50 docker compose up --build
+#
+# Or create a `.env` file next to this docker-compose.yml with:
+#   HOST_IP=192.168.0.50
+#
+# The backend uses SQLite (the project's current default) persisted in a
+# named volume. Frontend runs in `next dev` so the API URL is read at
+# runtime — no rebuild needed when HOST_IP changes.
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      SECRET_KEY: dev-secret-change-me
+      DEBUG: "True"
+      ALLOWED_HOSTS: "*"
+      CORS_ALLOWED_ORIGINS: "http://localhost:3000,http://127.0.0.1:3000,http://${HOST_IP:-localhost}:3000"
+      RPA_API_TOKEN: dev-rpa-token-change-me
+      ACCESS_TOKEN_LIFETIME_MINUTES: "60"
+      REFRESH_TOKEN_LIFETIME_DAYS: "7"
+      FRONTEND_URL: "http://${HOST_IP:-localhost}:3000"
+      EMAIL_BACKEND: django.core.mail.backends.console.EmailBackend
+    volumes:
+      - backend_db:/app/data
+      - backend_media:/app/media
+    ports:
+      - "8001:8000"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      NEXT_PUBLIC_API_URL: "http://${HOST_IP:-localhost}:8001/api/v1"
+      NEXT_PUBLIC_MICROSOFT_CLIENT_ID: ""
+      NEXT_PUBLIC_MICROSOFT_TENANT_ID: ""
+    ports:
+      - "3000:3000"
+
+volumes:
+  backend_db:
+  backend_media:

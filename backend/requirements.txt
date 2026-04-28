@@ -1,0 +1,28 @@
+# ALZ Nota Futura - Backend Requirements
+
+# Django core
+Django==5.2.1
+djangorestframework==3.16.0
+djangorestframework-simplejwt==5.5.1
+django-cors-headers==4.7.0
+django-unfold==0.73.1
+
+# Environment
+python-dotenv==1.1.0
+
+# HTTP client (for Microsoft OAuth validation)
+requests==2.32.3
+
+# XLSX parsing (contract / NF uploads)
+openpyxl==3.1.5
+
+# Production DB (uncomment when switching from SQLite)
+# mssql-django==1.5
+
+# Dev tools (optional, not needed to run)
+# django-debug-toolbar==5.2.0
+django-simple-history==3.11.0
+
+# Azure Blob Storage (NF XML archive)
+django-storages[azure]==1.14.4
+azure-storage-blob==12.23.1

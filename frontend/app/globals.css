@@ -1,0 +1,162 @@
+@import "tailwindcss";
+
+:root {
+  /* Base Colors - From Figma */
+  --background: #FFFFFF;
+  --background-secondary: #F2F6FA;
+  --foreground: #202020;
+
+  /* Brand Colors - Company Main Colors */
+  --brand-blue: #184367;
+  --brand-dark-blue: #0A1B39;
+  --brand-light-orange: #E7B67B;
+
+  /* Primary Color (uses brand blue) */
+  --primary: #184367;
+  --primary-hover: #0f2d4a;
+
+  /* Text Colors - From Figma */
+  --text-primary: #202020;
+  --text-secondary: #393939;
+  --text-tertiary: #808080;
+  --text-muted: #A2A2A2;
+  --text-placeholder: #AAAAAA;
+
+  /* UI Colors - From Figma */
+  --gray-50: #F2F6FA;
+  --gray-100: #D8D8D8;
+  --gray-200: #D5D5D5;
+  --gray-300: #D5D5D5;
+  --gray-400: #A2A2A2;
+  --gray-500: #808080;
+  --gray-600: #393939;
+  --gray-700: #202020;
+  --gray-800: #202020;
+  --gray-900: #202020;
+
+  /* Border Colors - From Figma */
+  --border-default: #D5D5D5;
+  --border-input: #D5D5D5;
+
+  /* Microsoft OAuth Colors */
+  --microsoft-orange: #F1511B;
+  --microsoft-green: #80CC28;
+  --microsoft-blue: #00ADEF;
+  --microsoft-yellow: #FBBC04;
+
+  /* System Status Colors */
+  --success: #34A853;
+  --success-light: #D1FAE5;
+  --warning: #FBBC04;
+  --warning-light: #FEF3C7;
+  --error: #C5221F;
+  --error-light: #FEE2E2;
+  --info: #4285F4;
+  --info-light: #DBEAFE;
+
+  /* Special Colors */
+  --special-50: #F5F5F5;
+
+  /* Chart Colors */
+  --chart-blue: #3b82f6;
+  --chart-orange: #F97316;
+  --chart-green: #34A853;
+  --chart-purple: #8B5CF6;
+  --chart-red: #EA4335;
+  --chart-yellow: #FBBC04;
+  --chart-grid: #f0f0f0;
+  --chart-axis: #888888;
+}
+
+@theme inline {
+  /* Background & Foreground */
+  --color-background: var(--background);
+  --color-background-secondary: var(--background-secondary);
+  --color-foreground: var(--foreground);
+
+  /* Brand Colors */
+  --color-brand-blue: var(--brand-blue);
+  --color-brand-dark-blue: var(--brand-dark-blue);
+  --color-brand-light-orange: var(--brand-light-orange);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+
+  /* Text Colors */
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+  --color-text-muted: var(--text-muted);
+  --color-text-placeholder: var(--text-placeholder);
+
+  /* Gray Scale */
+  --color-gray-50: var(--gray-50);
+  --color-gray-100: var(--gray-100);
+  --color-gray-200: var(--gray-200);
+  --color-gray-300: var(--gray-300);
+  --color-gray-400: var(--gray-400);
+  --color-gray-500: var(--gray-500);
+  --color-gray-600: var(--gray-600);
+  --color-gray-700: var(--gray-700);
+  --color-gray-800: var(--gray-800);
+  --color-gray-900: var(--gray-900);
+
+  /* Border Colors */
+  --color-border-default: var(--border-default);
+  --color-border-input: var(--border-input);
+
+  /* OAuth Colors */
+  --color-microsoft-orange: var(--microsoft-orange);
+  --color-microsoft-green: var(--microsoft-green);
+  --color-microsoft-blue: var(--microsoft-blue);
+  --color-microsoft-yellow: var(--microsoft-yellow);
+
+  /* Status Colors */
+  --color-success: var(--success);
+  --color-success-light: var(--success-light);
+  --color-warning: var(--warning);
+  --color-warning-light: var(--warning-light);
+  --color-error: var(--error);
+  --color-error-light: var(--error-light);
+  --color-info: var(--info);
+  --color-info-light: var(--info-light);
+
+  /* Special Colors */
+  --color-special-50: var(--special-50);
+
+  /* Chart Colors */
+  --color-chart-blue: var(--chart-blue);
+  --color-chart-orange: var(--chart-orange);
+  --color-chart-green: var(--chart-green);
+  --color-chart-purple: var(--chart-purple);
+  --color-chart-red: var(--chart-red);
+  --color-chart-yellow: var(--chart-yellow);
+  --color-chart-grid: var(--chart-grid);
+  --color-chart-axis: var(--chart-axis);
+
+  /* Font */
+  --font-sans: var(--font-inter);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+  * {
+    margin: 0;
+    padding: 0;
+  }
+}
+
+button {
+  cursor: pointer !important;
+}
+
+select,
+select option {
+  text-transform: uppercase;
+}
