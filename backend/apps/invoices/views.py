@@ -851,6 +851,7 @@ class NFFutureDeliveryBotViewSet(viewsets.GenericViewSet):
             or ''
         ).strip()
         ov_number = (request.query_params.get('ov_number') or '').strip()
+        status_param = (request.query_params.get('status') or '').strip()
 
         if not any([nf_number, nf_key, contract_number, ov_number]):
             return Response(
@@ -867,12 +868,16 @@ class NFFutureDeliveryBotViewSet(viewsets.GenericViewSet):
         resolved_lot_number: str = ''
         sales_order: SalesOrder | None = None
 
+        mother_qs = NFFutureDelivery.objects.all()
+        if status_param:
+            mother_qs = mother_qs.filter(status=status_param)
+
         if nf_key:
-            mother = NFFutureDelivery.objects.filter(nf_key=nf_key).first()
+            mother = mother_qs.filter(nf_key=nf_key).first()
         if mother is None and nf_number:
-            mother = NFFutureDelivery.objects.filter(nf_number=nf_number).first()
+            mother = mother_qs.filter(nf_number=nf_number).first()
         if mother is None and contract_number:
-            mother = NFFutureDelivery.objects.filter(lot_number=contract_number).first()
+            mother = mother_qs.filter(lot_number=contract_number).first()
             resolved_lot_number = contract_number
         if ov_number:
             sales_order = (
@@ -883,7 +888,11 @@ class NFFutureDeliveryBotViewSet(viewsets.GenericViewSet):
             )
             if sales_order is not None:
                 if mother is None:
-                    mother = sales_order.nf_future_delivery
+                    candidate = sales_order.nf_future_delivery
+                    if candidate is not None and (
+                        not status_param or candidate.status == status_param
+                    ):
+                        mother = candidate
                 if not resolved_lot_number and sales_order.managed_lot_id:
                     resolved_lot_number = (
                         sales_order.managed_lot.base_lot.lot_number

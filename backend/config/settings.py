@@ -176,7 +176,10 @@ CORS_ALLOWED_ORIGINS = os.environ.get(
     'http://localhost:3000,http://127.0.0.1:3000'
 ).split(',')
 
-CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = os.environ.get('CORS_ALLOW_ALL_ORIGINS', 'False') == 'True'
+
+# Credentials cannot be used together with the wildcard origin (browsers reject it).
+CORS_ALLOW_CREDENTIALS = not CORS_ALLOW_ALL_ORIGINS
 
 CORS_ALLOW_HEADERS = [
     'accept',
