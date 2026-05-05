@@ -83,6 +83,9 @@ type FormState = {
   freight_agents_cpt: string[];
   scheduling: string;
   route_info: boolean;
+  billing_branch: string | null;
+  has_nf_future_delivery: boolean;
+  nf_key_future_delivery: string;
 };
 
 function initialForm(lot: ContractManagedLot | null): FormState {
@@ -119,6 +122,9 @@ function initialForm(lot: ContractManagedLot | null): FormState {
     freight_agents_cpt: lot?.freight_agent ? [lot.freight_agent] : [],
     scheduling: lot?.scheduling ?? '',
     route_info: lot?.route_info ?? false,
+    billing_branch: lot?.billing_branch ?? null,
+    has_nf_future_delivery: lot?.has_nf_future_delivery ?? false,
+    nf_key_future_delivery: lot?.nf_key_future_delivery ?? '',
   };
 }
 
@@ -187,6 +193,11 @@ export function ShipmentWizard({
     queryFn: lookupsApi.tipoFreteSaida,
     enabled: isOpen,
   });
+  const branchesQuery = useQuery({
+    queryKey: ['lookup-branches'],
+    queryFn: lookupsApi.branches,
+    enabled: isOpen,
+  });
 
   const billingLocked = isBillingCnpjLocked(lot);
 
@@ -218,6 +229,9 @@ export function ShipmentWizard({
         client_state_registration: form.client_state_registration.trim(),
         cnpj_billing: billingLocked ? '' : form.cnpj_billing.trim(),
         commercial_responsible: form.commercial_responsible,
+        billing_branch: form.billing_branch,
+        has_nf_future_delivery: form.has_nf_future_delivery,
+        nf_key_future_delivery: form.nf_key_future_delivery.trim(),
       };
       const payload: ContractManagedLotUpdate = isApprove
         ? {
@@ -382,6 +396,7 @@ export function ShipmentWizard({
               fieldErrors={fieldErrors}
               participants={participantsQuery.data ?? []}
               commercials={commercialsQuery.data ?? []}
+              branches={branchesQuery.data ?? []}
               billingLocked={billingLocked}
               notes={notes}
               setNotes={setNotes}
@@ -1013,6 +1028,7 @@ function Step4({
   fieldErrors,
   participants,
   commercials,
+  branches,
   billingLocked,
   notes,
   setNotes,
@@ -1022,6 +1038,7 @@ function Step4({
   fieldErrors: Record<string, string>;
   participants: { id: string; name: string; inscricao_estadual: string; cnpj: string }[];
   commercials: { id: string; name: string }[];
+  branches: { id: string; sap_code: string; description: string }[];
   billingLocked: boolean;
   notes: string;
   setNotes: (v: string) => void;
@@ -1128,6 +1145,48 @@ function Step4({
         </select>
         <FieldError msg={fieldErrors.commercial_responsible} />
       </div>
+
+      <div className="sm:col-span-2">
+        <Label>Filial Emissora da Ordem</Label>
+        <select
+          value={form.billing_branch ?? ''}
+          onChange={(e) => update('billing_branch', e.target.value || null)}
+          className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:border-brand-blue focus:outline-none"
+        >
+          <option value="">Selecione…</option>
+          {branches.map((b) => (
+            <option key={b.id} value={b.id}>
+              {b.sap_code} — {b.description}
+            </option>
+          ))}
+        </select>
+        <FieldError msg={fieldErrors.billing_branch} />
+      </div>
+
+      <div className="sm:col-span-2">
+        <Label>NF Entrega Futura?</Label>
+        <Toggle
+          value={form.has_nf_future_delivery}
+          onChange={(v) => {
+            update('has_nf_future_delivery', v);
+            if (!v) update('nf_key_future_delivery', '');
+          }}
+        />
+      </div>
+
+      {form.has_nf_future_delivery && (
+        <div className="sm:col-span-2">
+          <Label>Chave NF Entrega Futura</Label>
+          <input
+            type="text"
+            value={form.nf_key_future_delivery}
+            onChange={(e) => update('nf_key_future_delivery', e.target.value)}
+            placeholder="Digite a chave da NF"
+            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-brand-blue focus:outline-none"
+          />
+          <FieldError msg={fieldErrors.nf_key_future_delivery} />
+        </div>
+      )}
 
       <div className="sm:col-span-2">
         <Label>Observações (opcional)</Label>

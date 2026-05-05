@@ -5,11 +5,10 @@ export type SalesOrderStatus = 'pending' | 'in_progress' | 'closed' | 'paused' |
 export type SalesOrderRpaStatus =
   | 'awaiting_ov_creation'
   | 'executing'
-  | 'awaiting_approval'
   | 'completed'
-  | 'rejected'
   | 'error'
-  | 'na';
+  | 'na'
+  | 'awaiting_ov_quantity_update';
 export type LoadingOrderStatus = 'active' | 'inactive';
 
 export interface LoadingOrder {
@@ -27,13 +26,15 @@ export interface LoadingOrder {
 export interface SalesOrder {
   id: string;
   ov_number: string;
-  ov_solicitation_number: string;
+  external_rpa_id: string;
   managed_lot: string;
   ov_status: SalesOrderStatus;
   ov_status_display: string;
   rpa_status: SalesOrderRpaStatus;
   rpa_status_display: string;
   rpa_error_message: string;
+  rpa_error_type: 'business_exception' | 'system_exception' | '';
+  rpa_screenshot: string | null;
   rpa_last_attempt_at: string | null;
   rpa_retry_count: number;
   creation_event_datetime: string;
@@ -66,6 +67,7 @@ export interface SalesOrder {
   producer_name: string | null;
   cpf_cnpj: string | null;
   product: string | null;
+  released_at: string | null;
   order_index: number;
   closed_at: string | null;
   manually_created: boolean;

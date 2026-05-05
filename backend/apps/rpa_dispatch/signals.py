@@ -10,7 +10,7 @@ from .models import RpaDispatchTask
 from .services import enqueue_task
 
 _PREVIOUS_RPA_STATUS_ATTR = '_previous_rpa_status'
-_TICKET_TRIGGER_STATUSES = {SalesOrder.RpaStatus.ERROR, SalesOrder.RpaStatus.REJECTED}
+_TICKET_TRIGGER_STATUSES = {SalesOrder.RpaStatus.ERROR}
 
 
 @receiver(pre_save, sender=SalesOrder)

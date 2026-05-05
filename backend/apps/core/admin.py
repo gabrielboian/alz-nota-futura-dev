@@ -10,10 +10,10 @@ from .models import (
     Participant,
     Producer,
     TerminalDestination,
-    TipoFreteSaida,
+    ExitFreightType,
     TransshipmentLocation,
-    Transportadora,
-    TransportadoraALZT,
+    Carrier,
+    CarrierALZT,
 )
 
 
@@ -77,21 +77,21 @@ class ProducerAdmin(HistoryModelAdmin):
     ordering = ('name',)
 
 
-@admin.register(TipoFreteSaida)
+@admin.register(ExitFreightType)
 class TipoFreteSaidaAdmin(HistoryModelAdmin):
-    list_display = ('name',)
-    search_fields = ('name',)
+    list_display = ('name', 'incoterm', 'loc_incoterm', 'description_short')
+    search_fields = ('name', 'incoterm', 'loc_incoterm')
     ordering = ('name',)
 
 
-@admin.register(Transportadora)
+@admin.register(Carrier)
 class TransportadoraAdmin(HistoryModelAdmin):
     list_display = ('code', 'name', 'state', 'cnpj', 'phone', 'email')
     search_fields = ('code', 'name', 'state', 'cnpj')
     ordering = ('code',)
 
 
-@admin.register(TransportadoraALZT)
+@admin.register(CarrierALZT)
 class TransportadoraALZTAdmin(HistoryModelAdmin):
     list_display = ('sap_code', 'description', 'state', 'cnpj', 'phone', 'email')
     search_fields = ('sap_code', 'description', 'state', 'cnpj')

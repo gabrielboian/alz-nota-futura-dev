@@ -34,16 +34,19 @@ class SalesOrder(models.Model):
     class RpaStatus(models.TextChoices):
         AWAITING_OV_CREATION = 'awaiting_ov_creation', _('Aguardando criação OV')
         EXECUTING = 'executing', _('Executando')
-        AWAITING_APPROVAL = 'awaiting_approval', _('Aguardando aprovação SAP')
         COMPLETED = 'completed', _('Criado')
-        REJECTED = 'rejected', _('Rejeitado')
         ERROR = 'error', _('Erro')
         NOT_APPLICABLE = 'na', _('Não se aplica')
+        AWAITING_OV_QUANTITY_UPDATE = 'awaiting_ov_quantity_update', _('Aguardando atualização quantidade OV')
+
+    class RpaErrorType(models.TextChoices):
+        BUSINESS_EXCEPTION = 'business_exception', _('Exceção de negócio')
+        SYSTEM_EXCEPTION = 'system_exception', _('Exceção de sistema')
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     ov_number = models.CharField(_('Nº OV'), max_length=20, blank=True, default='')
-    ov_solicitation_number = models.CharField(
-        _('Nº solicitação SAP'), max_length=20, blank=True, default=''
+    external_rpa_id = models.CharField(
+        _('ID externo RPA'), max_length=100, blank=True, default=''
     )
     managed_lot = models.ForeignKey(
         'contracts.ContractManagedLot',
@@ -61,6 +64,16 @@ class SalesOrder(models.Model):
         default=RpaStatus.AWAITING_OV_CREATION,
     )
     rpa_error_message = models.TextField(_('Erro RPA'), blank=True, default='')
+    rpa_error_type = models.CharField(
+        _('Tipo erro RPA'),
+        max_length=20,
+        choices=RpaErrorType.choices,
+        blank=True,
+        default='',
+    )
+    rpa_screenshot = models.FileField(
+        _('Screenshot RPA'), upload_to='rpa_screenshots/', blank=True, null=True
+    )
     rpa_last_attempt_at = models.DateTimeField(
         _('Última tentativa RPA'), null=True, blank=True
     )
@@ -80,7 +93,7 @@ class SalesOrder(models.Model):
     )
     cadence = models.CharField(_('Cadência'), max_length=50, blank=True, default='')
     freight_type_exit = models.ForeignKey(
-        'core.TipoFreteSaida',
+        'core.ExitFreightType',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,

@@ -126,7 +126,7 @@ class ShipmentRequestViewSet(viewsets.ModelViewSet):
                 total_quantity_kg=total_qty,
                 balance_kg=total_qty,
                 freight_type_exit=lot.freight_type_exit,
-                harvest_year=lot.base_lot.lot_number[:2] if lot.base_lot.lot_number else '',
+                harvest_year=shipment.harvest_year or (lot.base_lot.lot_number[:2] if lot.base_lot.lot_number else ''),
                 product_sap_code='',
                 alternative_route=lot.route_info,
                 corridor=lot.corridor,

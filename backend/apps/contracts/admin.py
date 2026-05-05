@@ -48,5 +48,5 @@ class ContractManagedLotAdmin(HistoryModelAdmin):
                      'billing_producer_name', 'client_state_registration')
     autocomplete_fields = ('base_lot', 'commercial_responsible',
                            'transshipment_location', 'terminal_destination', 'participant',
-                           'released_by')
+                           'released_by', 'billing_branch')
     readonly_fields = ('released_at',)

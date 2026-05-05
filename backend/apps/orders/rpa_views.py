@@ -7,11 +7,9 @@ machine identity.
 
 State transitions implemented
 -----------------------------
-ack                -> rpa_status=EXECUTING, last_attempt_at=now, retry_count++
+ack                -> rpa_status=EXECUTING, last_attempt_at=now, retry_count++, external_rpa_id stored
 created            -> ov_number set; ov_status=IN_PROGRESS; rpa_status=COMPLETED
-awaiting-approval  -> rpa_status=AWAITING_APPROVAL
-rejected           -> rpa_status=REJECTED, rpa_error_message=<reason>
-error              -> rpa_status=ERROR,    rpa_error_message=<msg>
+error              -> rpa_status=ERROR, rpa_error_type, rpa_error_message, rpa_screenshot
 closed             -> ov_status=CLOSED (SAP finished the OV)
 billing            -> faturamento callback (Flow 12):
                       increments SalesOrder delivered / decrements balance and,
@@ -60,22 +58,35 @@ class RPASalesOrderViewSet(viewsets.GenericViewSet):
     # ------------------------------------------------------------------
     @action(detail=False, methods=['get'])
     def pending(self, request):
-        """Return OVs the RPA should act on (awaiting creation or retry on error)."""
+        """Return OVs the RPA should act on.
+
+        Query params:
+            status  – filter by a specific rpa_status value (optional).
+                      Defaults to awaiting_ov_creation + awaiting_ov_quantity_update.
+            limit   – max rows (default 50, max 200).
+        """
         limit = min(int(request.query_params.get('limit', 50)), 200)
+        status_param = request.query_params.get('status')
+
+        if status_param:
+            rpa_statuses = [status_param]
+        else:
+            rpa_statuses = [
+                SalesOrder.RpaStatus.AWAITING_OV_CREATION,
+                SalesOrder.RpaStatus.AWAITING_OV_QUANTITY_UPDATE,
+            ]
+
         qs = (
-            SalesOrder.objects.filter(
-                rpa_status__in=[
-                    SalesOrder.RpaStatus.AWAITING_OV_CREATION,
-                    SalesOrder.RpaStatus.ERROR,
-                ],
-            )
+            SalesOrder.objects.filter(rpa_status__in=rpa_statuses)
             .select_related(
                 'managed_lot__base_lot',
                 'billing_branch',
                 'transshipment_location',
                 'terminal_destination',
+                'freight_type_exit',
+                'corridor',
             )
-            .order_by('rpa_last_attempt_at', 'created_at')[:limit]
+            .order_by('rpa_status', 'created_at')[:limit]
         )
         serializer = self.get_serializer(qs, many=True)
         return Response({'count': len(serializer.data), 'results': serializer.data})
@@ -85,22 +96,29 @@ class RPASalesOrderViewSet(viewsets.GenericViewSet):
     # ------------------------------------------------------------------
     @action(detail=True, methods=['post'])
     def ack(self, request, pk=None):
-        """RPA started working on the job."""
+        """RPA started working on the job.
+
+        Body: ``{ external_rpa_id?: str }``
+        """
         ov = self.get_object()
         ov.rpa_status = SalesOrder.RpaStatus.EXECUTING
         ov.rpa_last_attempt_at = timezone.now()
         ov.rpa_retry_count = (ov.rpa_retry_count or 0) + 1
-        ov.save(update_fields=[
-            'rpa_status', 'rpa_last_attempt_at', 'rpa_retry_count', 'updated_at',
-        ])
-        _log_callback('ack', ov.id, {})
+        external_rpa_id = (request.data.get('external_rpa_id') or '').strip()
+        if external_rpa_id:
+            ov.external_rpa_id = external_rpa_id
+        fields = ['rpa_status', 'rpa_last_attempt_at', 'rpa_retry_count', 'updated_at']
+        if external_rpa_id:
+            fields.append('external_rpa_id')
+        ov.save(update_fields=fields)
+        _log_callback('ack', ov.id, {'external_rpa_id': external_rpa_id})
         return Response(self.get_serializer(ov).data)
 
     @action(detail=True, methods=['post'])
     def created(self, request, pk=None):
         """SAP confirmed OV creation.
 
-        Body: ``{ ov_number: str (required), ov_solicitation_number?: str }``
+        Body: ``{ ov_number: str (required) }``
         """
         ov_number = (request.data.get('ov_number') or '').strip()
         if not ov_number:
@@ -108,58 +126,48 @@ class RPASalesOrderViewSet(viewsets.GenericViewSet):
                 {'detail': 'ov_number é obrigatório.'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        solicitation = (request.data.get('ov_solicitation_number') or '').strip()
 
         ov = self.get_object()
         ov.ov_number = ov_number
-        if solicitation:
-            ov.ov_solicitation_number = solicitation
         ov.ov_status = SalesOrder.Status.IN_PROGRESS
         ov.rpa_status = SalesOrder.RpaStatus.COMPLETED
         ov.rpa_error_message = ''
         ov.save(update_fields=[
-            'ov_number', 'ov_solicitation_number', 'ov_status', 'rpa_status',
-            'rpa_error_message', 'updated_at',
+            'ov_number', 'ov_status', 'rpa_status', 'rpa_error_message', 'updated_at',
         ])
-        _log_callback('created', ov.id, {'ov_number': ov_number, 'solicitation': solicitation})
-        return Response(self.get_serializer(ov).data)
-
-    @action(detail=True, methods=['post'], url_path='awaiting-approval')
-    def awaiting_approval(self, request, pk=None):
-        ov = self.get_object()
-        ov.rpa_status = SalesOrder.RpaStatus.AWAITING_APPROVAL
-        solicitation = (request.data.get('ov_solicitation_number') or '').strip()
-        fields = ['rpa_status', 'updated_at']
-        if solicitation:
-            ov.ov_solicitation_number = solicitation
-            fields.append('ov_solicitation_number')
-        ov.save(update_fields=fields)
-        _log_callback('awaiting_approval', ov.id, {'solicitation': solicitation})
-        return Response(self.get_serializer(ov).data)
-
-    @action(detail=True, methods=['post'])
-    def rejected(self, request, pk=None):
-        """SAP rejected the OV. Body: ``{ reason: str }``."""
-        reason = (request.data.get('reason') or '').strip()
-        ov = self.get_object()
-        ov.rpa_status = SalesOrder.RpaStatus.REJECTED
-        ov.rpa_error_message = reason
-        ov.save(update_fields=['rpa_status', 'rpa_error_message', 'updated_at'])
-        _log_callback('rejected', ov.id, {'reason': reason})
+        _log_callback('created', ov.id, {'ov_number': ov_number})
         return Response(self.get_serializer(ov).data)
 
     @action(detail=True, methods=['post'])
     def error(self, request, pk=None):
-        """RPA hit a generic error. Body: ``{ error_message: str }``."""
+        """RPA hit an error.
+
+        Body:
+            error_type     (required) – ``business_exception`` or ``system_exception``
+            error_message  (required) – human-readable message
+            screenshot     (optional) – file upload saved to blob storage
+        """
+        error_type = (request.data.get('error_type') or '').strip()
+        valid_types = {c[0] for c in SalesOrder.RpaErrorType.choices}
+        if error_type not in valid_types:
+            return Response(
+                {'detail': f'error_type inválido. Use: {", ".join(sorted(valid_types))}.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         message = (request.data.get('error_message') or '').strip()
+        screenshot = request.FILES.get('screenshot')
+
         ov = self.get_object()
         ov.rpa_status = SalesOrder.RpaStatus.ERROR
+        ov.rpa_error_type = error_type
         ov.rpa_error_message = message
         ov.rpa_last_attempt_at = timezone.now()
-        ov.save(update_fields=[
-            'rpa_status', 'rpa_error_message', 'rpa_last_attempt_at', 'updated_at',
-        ])
-        _log_callback('error', ov.id, {'error_message': message})
+        fields = ['rpa_status', 'rpa_error_type', 'rpa_error_message', 'rpa_last_attempt_at', 'updated_at']
+        if screenshot:
+            ov.rpa_screenshot = screenshot
+            fields.append('rpa_screenshot')
+        ov.save(update_fields=fields)
+        _log_callback('error', ov.id, {'error_type': error_type, 'error_message': message})
         return Response(self.get_serializer(ov).data)
 
     @action(detail=True, methods=['post'])

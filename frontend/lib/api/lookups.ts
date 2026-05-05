@@ -54,6 +54,10 @@ export interface Corridor {
 export interface TipoFreteSaida {
   id: string;
   name: string;
+  incoterm: string;
+  loc_incoterm: string;
+  description_short: string;
+  description: string;
 }
 
 export interface Transportadora {

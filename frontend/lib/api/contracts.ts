@@ -75,6 +75,10 @@ export interface ContractManagedLot {
   scheduling: string;
   route_info: boolean;
 
+  billing_branch: string | null;
+  has_nf_future_delivery: boolean;
+  nf_key_future_delivery: string;
+
   // Read-only computed
   cif_freight_agent_code: string;
 
@@ -118,6 +122,9 @@ export type ContractManagedLotUpdate = Partial<{
   freight_agent: string;
   scheduling: string;
   route_info: boolean;
+  billing_branch: string | null;
+  has_nf_future_delivery: boolean;
+  nf_key_future_delivery: string;
 }>;
 
 export interface ContractUpload {

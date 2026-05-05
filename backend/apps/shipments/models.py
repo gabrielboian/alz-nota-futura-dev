@@ -60,6 +60,7 @@ class ShipmentRequest(models.Model):
     requested_at = models.DateTimeField(_('Solicitado em'), auto_now_add=True)
     approved_at = models.DateTimeField(_('Aprovado em'), null=True, blank=True)
     notes = models.TextField(_('Observações'), blank=True, default='')
+    harvest_year = models.CharField(_('Safra'), max_length=10, blank=True, default='')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

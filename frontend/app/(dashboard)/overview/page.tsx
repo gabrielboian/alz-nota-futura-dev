@@ -41,11 +41,10 @@ const OV_STATUS_LABEL: Record<string, string> = {
 const OV_RPA_LABEL: Record<string, string> = {
   awaiting_ov_creation: 'Aguardando criação OV',
   executing: 'Executando',
-  awaiting_approval: 'Aguardando aprovação SAP',
   completed: 'Criado',
-  rejected: 'Rejeitado',
   error: 'Erro',
   na: 'Não se aplica',
+  awaiting_ov_quantity_update: 'Aguardando atualização quantidade OV',
 };
 
 const CONTRACT_STATUS_LABEL: Record<string, string> = {

@@ -8,10 +8,10 @@ from .models import (
     Participant,
     Producer,
     TerminalDestination,
-    TipoFreteSaida,
+    ExitFreightType,
     TransshipmentLocation,
-    Transportadora,
-    TransportadoraALZT,
+    Carrier,
+    CarrierALZT,
 )
 
 
@@ -41,13 +41,13 @@ class TransshipmentLocationSerializer(serializers.ModelSerializer):
 
 class TipoFreteSaidaSerializer(serializers.ModelSerializer):
     class Meta:
-        model = TipoFreteSaida
-        fields = ('id', 'name')
+        model = ExitFreightType
+        fields = ('id', 'name', 'incoterm', 'loc_incoterm', 'description_short', 'description')
 
 
 class TransportadoraSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Transportadora
+        model = Carrier
         fields = ('id', 'code', 'name', 'state', 'cnpj', 'phone', 'email')
 
     def validate_code(self, value: str) -> str:
@@ -61,7 +61,7 @@ class TransportadoraSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         code = validated_data['code']
-        existing = Transportadora.objects.filter(code__iexact=code).first()
+        existing = Carrier.objects.filter(code__iexact=code).first()
         if existing:
             return existing
         return super().create(validated_data)
@@ -69,7 +69,7 @@ class TransportadoraSerializer(serializers.ModelSerializer):
 
 class TransportadoraALZTSerializer(serializers.ModelSerializer):
     class Meta:
-        model = TransportadoraALZT
+        model = CarrierALZT
         fields = ('id', 'sap_code', 'description', 'state', 'cnpj', 'phone', 'email')
 
 

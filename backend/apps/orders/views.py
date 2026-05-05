@@ -208,7 +208,7 @@ class SalesOrderViewSet(viewsets.ModelViewSet):
 
         ov.total_quantity_kg = ov.total_quantity_kg + added
         ov.balance_kg = ov.balance_kg + added
-        ov.rpa_status = SalesOrder.RpaStatus.AWAITING_OV_CREATION
+        ov.rpa_status = SalesOrder.RpaStatus.AWAITING_OV_QUANTITY_UPDATE
         ov.save(update_fields=[
             'total_quantity_kg', 'balance_kg', 'rpa_status', 'updated_at',
         ])

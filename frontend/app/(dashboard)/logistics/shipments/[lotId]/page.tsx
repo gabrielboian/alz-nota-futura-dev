@@ -68,6 +68,7 @@ const OV_STATUS_VARIANT: Record<SalesOrder['ov_status'], 'info' | 'success' | 'w
   in_progress: 'info',
   closed: 'success',
   paused: 'default',
+  invalidated: 'default',
 };
 
 export default function LoteDetailPage({ params }: { params: Promise<PageParams> }) {
@@ -381,7 +382,7 @@ function OVCard({
 }) {
   const totalOc = ov.loading_orders.length;
   const active = ov.ov_status === 'in_progress' || ov.ov_status === 'pending';
-  const hasRpaIssue = ov.rpa_status === 'error' || ov.rpa_status === 'rejected';
+  const hasRpaIssue = ov.rpa_status === 'error';
 
   const dmTaskQuery = useQuery({
     queryKey: ['rpa-dm-ticket', ov.id],
@@ -402,7 +403,7 @@ function OVCard({
     <Card>
       <CardHeader className="flex flex-wrap items-center justify-between gap-2 pb-2">
         <h3 className="text-base font-semibold text-text-primary">
-          {index}º OV: {ov.ov_number || ov.ov_solicitation_number || '— pendente —'}
+          {index}º OV: {ov.ov_number || '— pendente —'}
         </h3>
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant={OV_STATUS_VARIANT[ov.ov_status]}>{ov.ov_status_display}</Badge>

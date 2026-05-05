@@ -90,6 +90,9 @@ MANAGED_LOT_PORTAL_FIELDS = (
     'freight_agent',
     'scheduling',
     'route_info',
+    'billing_branch',
+    'has_nf_future_delivery',
+    'nf_key_future_delivery',
 )
 
 

@@ -84,7 +84,7 @@ class ContractBaseLotViewSet(viewsets.ReadOnlyModelViewSet):
 class ContractManagedLotViewSet(viewsets.ModelViewSet):
     queryset = ContractManagedLot.objects.select_related(
         'base_lot', 'commercial_responsible', 'terminal_destination',
-        'transshipment_location', 'participant',
+        'transshipment_location', 'participant', 'billing_branch',
     )
     serializer_class = ContractManagedLotSerializer
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]

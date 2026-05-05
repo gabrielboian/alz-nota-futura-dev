@@ -13,10 +13,10 @@ from .models import (
     Participant,
     Producer,
     TerminalDestination,
-    TipoFreteSaida,
+    ExitFreightType,
     TransshipmentLocation,
-    Transportadora,
-    TransportadoraALZT,
+    Carrier,
+    CarrierALZT,
 )
 from .serializers import (
     BranchSerializer,
@@ -108,7 +108,7 @@ class ProducerViewSet(viewsets.ModelViewSet):
 
 
 class TipoFreteSaidaViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = TipoFreteSaida.objects.all()
+    queryset = ExitFreightType.objects.all()
     serializer_class = TipoFreteSaidaSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
@@ -120,7 +120,7 @@ class TipoFreteSaidaViewSet(viewsets.ReadOnlyModelViewSet):
 class TransportadoraViewSet(viewsets.ModelViewSet):
     """Transportadoras (terceiros). Searchable; new entries can be created on-the-fly (CPT flow)."""
 
-    queryset = Transportadora.objects.all()
+    queryset = Carrier.objects.all()
     serializer_class = TransportadoraSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
@@ -132,7 +132,7 @@ class TransportadoraViewSet(viewsets.ModelViewSet):
 class TransportadoraALZTViewSet(viewsets.ReadOnlyModelViewSet):
     """Transportadoras ALZT (filiais próprias ALZ). Read-only."""
 
-    queryset = TransportadoraALZT.objects.all()
+    queryset = CarrierALZT.objects.all()
     serializer_class = TransportadoraALZTSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
@@ -153,8 +153,8 @@ class FreightAgentListView(APIView):
     def get(self, request):
         search = (request.query_params.get('search') or '').strip().lower()
 
-        tp_qs = Transportadora.objects.all()
-        alzt_qs = TransportadoraALZT.objects.all()
+        tp_qs = Carrier.objects.all()
+        alzt_qs = CarrierALZT.objects.all()
         if search:
             from django.db.models import Q
             tp_qs = tp_qs.filter(Q(code__icontains=search) | Q(name__icontains=search))

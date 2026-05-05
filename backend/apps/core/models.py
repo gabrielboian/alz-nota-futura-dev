@@ -42,7 +42,7 @@ class Branch(TimestampedModel):
         _('Tipo'), max_length=20, choices=BranchType.choices, default=BranchType.WAREHOUSE
     )
     cif_transportadora = models.ForeignKey(
-        'Transportadora',
+        'Carrier',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -149,10 +149,14 @@ class CommercialResponsible(TimestampedModel):
         return self.name
 
 
-class TipoFreteSaida(TimestampedModel):
+class ExitFreightType(TimestampedModel):
     """Tipo de Frete Saída — lookup para o campo tipo_frete_saida no lote gerenciado."""
 
     name = models.CharField(_('Nome'), max_length=100, unique=True)
+    incoterm = models.CharField(_('Incoterm'), max_length=10, blank=True, default='')
+    loc_incoterm = models.CharField(_('Incoterm local'), max_length=50, blank=True, default='')
+    description_short = models.CharField(_('Descrição Rápida'), max_length=300, blank=True, default='')
+    description = models.TextField(_('Descrição'), blank=True, default='')
 
     history = HistoricalRecords()
 
@@ -210,13 +214,13 @@ class Producer(TimestampedModel):
         return self.name
 
 
-class Transportadora(TimestampedModel):
+class Carrier(TimestampedModel):
     """Third-party carrier (BD-Transportadoras sheet).
 
     Used to resolve the freight agent code:
     - CIF  → branch.cif_transportadora.code
     - FOB  → collection_point_code (no lookup needed)
-    - CPT  → user selects from this table or TransportadoraALZT; can create on-the-fly
+    - CPT  → user selects from this table or CarrierALZT; can create on-the-fly
     """
 
     code = models.CharField(_('Código SAP Fornecedor'), max_length=20, unique=True)
@@ -237,7 +241,7 @@ class Transportadora(TimestampedModel):
         return f'{self.code} — {self.name}'
 
 
-class TransportadoraALZT(TimestampedModel):
+class CarrierALZT(TimestampedModel):
     """ALZ-owned transport branches (BD-Transportadora ALZT sheet).
 
     These are ALZ's own subsidiaries that operate as carriers.

@@ -37,7 +37,6 @@ class SalesOrderAdmin(HistoryModelAdmin):
     list_filter = ('ov_status', 'rpa_status', 'alternative_route')
     search_fields = (
         'ov_number',
-        'ov_solicitation_number',
         'managed_lot__base_lot__lot_number',
         'billing_producer_name',
         'freight_agent',

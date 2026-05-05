@@ -156,7 +156,7 @@ class ContractManagedLot(TimestampedModel):
         default='',
     )
     freight_type_exit = models.ForeignKey(
-        'core.TipoFreteSaida',
+        'core.ExitFreightType',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -219,6 +219,20 @@ class ContractManagedLot(TimestampedModel):
     )
     scheduling = models.CharField(_('Agendamento'), max_length=50, blank=True, default='')
     route_info = models.BooleanField(_('Percurso: NI'), default=False)
+
+    billing_branch = models.ForeignKey(
+        'core.Branch',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='managed_lot_billing',
+        verbose_name=_('Filial Emissora da Ordem'),
+        help_text=_('Filial que emitirá as Ordens de Venda para este lote.'),
+    )
+    has_nf_future_delivery = models.BooleanField(_('NF Entrega Futura?'), default=False)
+    nf_key_future_delivery = models.CharField(
+        _('Chave NF Entrega Futura'), max_length=50, blank=True, default=''
+    )
 
     released_at = models.DateTimeField(_('Data de liberação'), null=True, blank=True)
     released_by = models.ForeignKey(
