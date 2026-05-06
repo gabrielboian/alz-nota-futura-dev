@@ -216,7 +216,8 @@ class SalesOrderViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'], url_path='bulk-rfl')
     def bulk_rfl(self, request):
-        """Update rfl_value_kg on many OVs in one call."""
+        """Create a new OV revision with updated rfl_value_kg for each eligible OV."""
+        from .services import revise_sales_order
         ids = request.data.get('ids') or []
         if not isinstance(ids, list) or not ids:
             return Response(
@@ -228,10 +229,19 @@ class SalesOrderViewSet(viewsets.ModelViewSet):
         except ValueError as exc:
             return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
-        updated = SalesOrder.objects.filter(pk__in=ids).update(
-            rfl_value_kg=rfl, updated_at=timezone.now()
+        ovs = SalesOrder.objects.filter(pk__in=ids).exclude(
+            ov_status__in=[SalesOrder.Status.INVALIDATED, SalesOrder.Status.CLOSED]
         )
-        return Response({'updated': updated})
+        user = request.user if request.user.is_authenticated else None
+        revised = 0
+        errors = []
+        for ov in ovs:
+            try:
+                revise_sales_order(ov, changes={'rfl_value_kg': rfl}, user=user)
+                revised += 1
+            except ValueError as exc:
+                errors.append({'id': str(ov.id), 'detail': str(exc)})
+        return Response({'revised': revised, 'errors': errors})
 
     @action(detail=False, methods=['post'], url_path='register-manual')
     def register_manual(self, request):

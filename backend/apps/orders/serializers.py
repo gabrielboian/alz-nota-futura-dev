@@ -113,6 +113,7 @@ class SalesOrderSerializer(serializers.ModelSerializer):
             'rpa_error_message',
             'rpa_error_type',
             'rpa_error_type_display',
+            'rpa_traceback',
             'rpa_screenshot',
             'rpa_last_attempt_at',
             'rpa_retry_count',

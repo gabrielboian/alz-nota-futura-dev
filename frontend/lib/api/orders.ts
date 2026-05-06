@@ -34,6 +34,7 @@ export interface SalesOrder {
   rpa_status_display: string;
   rpa_error_message: string;
   rpa_error_type: 'business_exception' | 'system_exception' | '';
+  rpa_traceback: string;
   rpa_screenshot: string | null;
   rpa_last_attempt_at: string | null;
   rpa_retry_count: number;
@@ -135,7 +136,7 @@ export const ordersApi = {
   },
 
   bulkRfl: async (ids: string[], rfl_value_kg: string | number) => {
-    const response = await apiClient.post<{ updated: number }>(
+    const response = await apiClient.post<{ revised: number; errors: { id: string; detail: string }[] }>(
       '/orders/sales-orders/bulk-rfl/',
       { ids, rfl_value_kg }
     );

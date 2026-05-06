@@ -276,12 +276,9 @@ class ContractManagedLotViewSet(viewsets.ModelViewSet):
                 )
                 created_ids.append(str(new_managed.id))
 
-            # Cancel the original lot so the saldo no longer appears open.
-            managed.status = ContractManagedLot.Status.CANCELLED
+            # Mark the original lot as awaiting quantity update in SAP.
+            managed.status = ContractManagedLot.Status.AWAITING_CHANGE_QUANTITY
             managed.save(update_fields=['status', 'updated_at'])
-            base.remaining_kg = Decimal('0')
-            base.balance = Decimal('0')
-            base.save(update_fields=['remaining_kg', 'balance', 'updated_at'])
 
         return Response(
             {

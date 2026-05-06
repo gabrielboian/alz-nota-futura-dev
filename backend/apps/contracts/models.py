@@ -119,6 +119,7 @@ class ContractManagedLot(TimestampedModel):
         IN_PROGRESS = 'in_progress', _('Embarque em andamento')
         FINISHED = 'finished', _('Embarque Finalizado')
         CANCELLED = 'cancelled', _('Cancelado')
+        AWAITING_CHANGE_QUANTITY = 'awaiting_change_quantity', _('Aguardando atualização de quantidade')
 
     base_lot = models.OneToOneField(
         ContractBaseLot, on_delete=models.CASCADE, related_name='managed_lot',

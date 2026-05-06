@@ -82,6 +82,11 @@ class TipoFreteSaidaAdmin(HistoryModelAdmin):
     list_display = ('name', 'incoterm', 'loc_incoterm', 'description_short')
     search_fields = ('name', 'incoterm', 'loc_incoterm')
     ordering = ('name',)
+    fieldsets = (
+        (None, {
+            'fields': ('name', 'incoterm', 'loc_incoterm', 'description_short', 'description'),
+        }),
+    )
 
 
 @admin.register(Carrier)

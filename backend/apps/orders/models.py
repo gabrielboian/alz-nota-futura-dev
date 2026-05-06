@@ -71,6 +71,7 @@ class SalesOrder(models.Model):
         blank=True,
         default='',
     )
+    rpa_traceback = models.TextField(_('Traceback RPA'), blank=True, default='')
     rpa_screenshot = models.FileField(
         _('Screenshot RPA'), upload_to='rpa_screenshots/', blank=True, null=True
     )

@@ -158,8 +158,8 @@ export default function OrdensVendaPage() {
     setSelectedIds(new Set());
   }
 
-  function handleBulkSuccess(updated: number) {
-    notify.success(`${updated} ordem(ns) de venda atualizada(s).`);
+  function handleBulkSuccess(revised: number) {
+    notify.success(`${revised} ordem(ns) de venda revisada(s) com novo valor RFL.`);
     setModalOpen(false);
     clearSelection();
     queryClient.invalidateQueries({ queryKey: ['sales-orders'] });

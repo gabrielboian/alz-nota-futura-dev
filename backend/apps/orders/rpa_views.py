@@ -132,8 +132,9 @@ class RPASalesOrderViewSet(viewsets.GenericViewSet):
         ov.ov_status = SalesOrder.Status.IN_PROGRESS
         ov.rpa_status = SalesOrder.RpaStatus.COMPLETED
         ov.rpa_error_message = ''
+        ov.rpa_traceback = ''
         ov.save(update_fields=[
-            'ov_number', 'ov_status', 'rpa_status', 'rpa_error_message', 'updated_at',
+            'ov_number', 'ov_status', 'rpa_status', 'rpa_error_message', 'rpa_traceback', 'updated_at',
         ])
         _log_callback('created', ov.id, {'ov_number': ov_number})
         return Response(self.get_serializer(ov).data)
@@ -155,14 +156,16 @@ class RPASalesOrderViewSet(viewsets.GenericViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         message = (request.data.get('error_message') or '').strip()
+        traceback = (request.data.get('traceback') or '').strip()
         screenshot = request.FILES.get('screenshot')
 
         ov = self.get_object()
         ov.rpa_status = SalesOrder.RpaStatus.ERROR
         ov.rpa_error_type = error_type
         ov.rpa_error_message = message
+        ov.rpa_traceback = traceback
         ov.rpa_last_attempt_at = timezone.now()
-        fields = ['rpa_status', 'rpa_error_type', 'rpa_error_message', 'rpa_last_attempt_at', 'updated_at']
+        fields = ['rpa_status', 'rpa_error_type', 'rpa_error_message', 'rpa_traceback', 'rpa_last_attempt_at', 'updated_at']
         if screenshot:
             ov.rpa_screenshot = screenshot
             fields.append('rpa_screenshot')

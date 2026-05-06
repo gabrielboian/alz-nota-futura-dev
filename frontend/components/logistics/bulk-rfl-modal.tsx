@@ -11,7 +11,7 @@ interface BulkRFLModalProps {
   isOpen: boolean;
   onClose: () => void;
   selectedIds: string[];
-  onSuccess: (updated: number) => void;
+  onSuccess: (revised: number) => void;
 }
 
 function formatNumber(value: number) {
@@ -59,7 +59,7 @@ export function BulkRFLModal({
     setError(null);
     try {
       const result = await ordersApi.bulkRfl(selectedIds, rflNumber);
-      onSuccess(result.updated);
+      onSuccess(result.revised);
       reset();
     } catch (err) {
       setError(getErrorMessage(err, 'Não foi possível atualizar os valores de RFL.'));
