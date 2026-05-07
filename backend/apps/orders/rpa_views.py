@@ -80,11 +80,19 @@ class RPASalesOrderViewSet(viewsets.GenericViewSet):
             SalesOrder.objects.filter(rpa_status__in=rpa_statuses)
             .select_related(
                 'managed_lot__base_lot',
-                'billing_branch',
+                'managed_lot__freight_type_exit',
+                'managed_lot__corridor',
+                'managed_lot__transshipment_location',
+                'managed_lot__terminal_destination',
+                'managed_lot__billing_branch__cif_transportadora',
+                'managed_lot__participant',
+                'managed_lot__commercial_responsible',
+                'billing_branch__cif_transportadora',
                 'transshipment_location',
                 'terminal_destination',
                 'freight_type_exit',
                 'corridor',
+                'nf_future_delivery',
             )
             .order_by('rpa_status', 'created_at')[:limit]
         )

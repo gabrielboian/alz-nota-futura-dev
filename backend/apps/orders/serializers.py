@@ -1,6 +1,7 @@
 """Serializers for orders app."""
 from rest_framework import serializers
 
+from apps.contracts.serializers import ContractManagedLotSerializer
 from apps.core.serializers import (
     BranchSerializer,
     CorridorSerializer,
@@ -8,6 +9,7 @@ from apps.core.serializers import (
     TipoFreteSaidaSerializer,
     TransshipmentLocationSerializer,
 )
+from apps.invoices.serializers import NFFutureDeliverySerializer
 
 from .models import LoadingOrder, SalesOrder
 
@@ -88,6 +90,13 @@ class SalesOrderSerializer(serializers.ModelSerializer):
     transshipment_location_obj = TransshipmentLocationSerializer(
         source='transshipment_location', read_only=True, default=None
     )
+    # Full nested FK objects for managed_lot and nf_future_delivery
+    managed_lot_obj = ContractManagedLotSerializer(
+        source='managed_lot', read_only=True, default=None
+    )
+    nf_future_delivery_obj = NFFutureDeliverySerializer(
+        source='nf_future_delivery', read_only=True, default=None
+    )
     # ContractManagedLot field
     released_at = serializers.DateTimeField(
         source='managed_lot.released_at', read_only=True, default=None
@@ -148,6 +157,7 @@ class SalesOrderSerializer(serializers.ModelSerializer):
             'client_state_registration',
             'nf_future_delivery',
             'nf_future_delivery_number',
+            'nf_future_delivery_obj',
             'lot_number',
             'producer_name',
             'cpf_cnpj',
@@ -163,6 +173,7 @@ class SalesOrderSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
             'loading_orders',
+            'managed_lot_obj',
         ]
         read_only_fields = [
             'id',

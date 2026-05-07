@@ -40,9 +40,18 @@ class SalesOrderViewSet(viewsets.ModelViewSet):
 
     queryset = SalesOrder.objects.select_related(
         'managed_lot__base_lot',
+        'managed_lot__freight_type_exit',
+        'managed_lot__corridor',
+        'managed_lot__transshipment_location',
+        'managed_lot__terminal_destination',
+        'managed_lot__billing_branch__cif_transportadora',
+        'managed_lot__participant',
+        'managed_lot__commercial_responsible',
         'transshipment_location',
         'terminal_destination',
-        'billing_branch',
+        'billing_branch__cif_transportadora',
+        'freight_type_exit',
+        'corridor',
         'nf_future_delivery',
     ).prefetch_related('loading_orders')
     serializer_class = SalesOrderSerializer

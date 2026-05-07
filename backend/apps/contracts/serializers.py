@@ -2,6 +2,15 @@
 from rest_framework import serializers
 
 from apps.core.models import Branch
+from apps.core.serializers import (
+    BranchSerializer,
+    CommercialResponsibleSerializer,
+    CorridorSerializer,
+    ParticipantSerializer,
+    TerminalDestinationSerializer,
+    TipoFreteSaidaSerializer,
+    TransshipmentLocationSerializer,
+)
 
 from .models import ContractBaseLot, ContractManagedLot, ContractUpload
 
@@ -33,6 +42,29 @@ class ContractManagedLotSerializer(serializers.ModelSerializer):
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     rfl_value_sack = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
     cif_freight_agent_code = serializers.SerializerMethodField()
+
+    # Nested FK objects
+    commercial_responsible_obj = CommercialResponsibleSerializer(
+        source='commercial_responsible', read_only=True, default=None
+    )
+    freight_type_exit_obj = TipoFreteSaidaSerializer(
+        source='freight_type_exit', read_only=True, default=None
+    )
+    transshipment_location_obj = TransshipmentLocationSerializer(
+        source='transshipment_location', read_only=True, default=None
+    )
+    terminal_destination_obj = TerminalDestinationSerializer(
+        source='terminal_destination', read_only=True, default=None
+    )
+    participant_obj = ParticipantSerializer(
+        source='participant', read_only=True, default=None
+    )
+    corridor_obj = CorridorSerializer(
+        source='corridor', read_only=True, default=None
+    )
+    billing_branch_obj = BranchSerializer(
+        source='billing_branch', read_only=True, default=None
+    )
 
     class Meta:
         model = ContractManagedLot
