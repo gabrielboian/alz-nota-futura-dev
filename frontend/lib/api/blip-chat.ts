@@ -187,7 +187,13 @@ export function useBlipChat() {
       if (blipBuiltRef.current) return;
 
       const chatSessionId =
-        localStorage.getItem(STORAGE_CHAT_SESSION_ID) || crypto.randomUUID();
+        localStorage.getItem(STORAGE_CHAT_SESSION_ID) ||
+        (typeof crypto.randomUUID === 'function'
+          ? crypto.randomUUID()
+          : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+              const r = (Math.random() * 16) | 0;
+              return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+            }));
 
       localStorage.setItem(STORAGE_CHAT_SESSION_ID, chatSessionId);
 
