@@ -1,6 +1,9 @@
 # Docker Compose for testing on Ubuntu host.
 # Set HOST_IP to the IP/hostname your RPA will use to reach this machine.
-# Open ports 3000 and 8001 on the Ubuntu firewall (e.g. `ufw allow 3000` and `ufw allow 8001`).
+#
+# On the Ubuntu host, open firewall ports ONCE before first run:
+#   sudo ufw allow 8001/tcp
+#   sudo ufw allow 3000/tcp
 #
 # Usage:
 #   HOST_IP=192.168.0.50 docker compose up --build
@@ -29,11 +32,19 @@ services:
       REFRESH_TOKEN_LIFETIME_DAYS: "7"
       FRONTEND_URL: "http://${HOST_IP:-localhost}:3000"
       EMAIL_BACKEND: django.core.mail.backends.console.EmailBackend
+      ALZ_API_USERNAME: t2cgroup.apiocr
+      ALZ_API_PASSWORD: agiv0tVBiyzuiVQkT1wa
     volumes:
       - backend_db:/app/data
       - backend_media:/app/media
     ports:
-      - "8001:8000"
+      - "0.0.0.0:8001:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health/')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   frontend:
     build:
@@ -41,13 +52,14 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     environment:
       NEXT_PUBLIC_API_URL: "http://${HOST_IP:-localhost}:8001/api/v1"
       NEXT_PUBLIC_MICROSOFT_CLIENT_ID: ""
       NEXT_PUBLIC_MICROSOFT_TENANT_ID: ""
     ports:
-      - "3000:3000"
+      - "0.0.0.0:3000:3000"
 
 volumes:
   backend_db:
