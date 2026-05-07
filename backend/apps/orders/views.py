@@ -301,7 +301,7 @@ class SalesOrderViewSet(viewsets.ModelViewSet):
         active_rpa_statuses = {
             SalesOrder.RpaStatus.AWAITING_OV_CREATION,
             SalesOrder.RpaStatus.EXECUTING,
-            SalesOrder.RpaStatus.AWAITING_APPROVAL,
+            SalesOrder.RpaStatus.AWAITING_OV_QUANTITY_UPDATE,
             SalesOrder.RpaStatus.COMPLETED,
         }
         blocking_qs = SalesOrder.objects.filter(

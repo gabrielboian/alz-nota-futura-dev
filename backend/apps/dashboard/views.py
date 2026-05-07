@@ -69,14 +69,13 @@ class DashboardKPIView(APIView):
         rpa_errors = SalesOrder.objects.filter(
             rpa_status__in=[
                 SalesOrder.RpaStatus.ERROR,
-                SalesOrder.RpaStatus.REJECTED,
             ]
         ).count()
         awaiting_sap = SalesOrder.objects.filter(
             rpa_status__in=[
                 SalesOrder.RpaStatus.AWAITING_OV_CREATION,
                 SalesOrder.RpaStatus.EXECUTING,
-                SalesOrder.RpaStatus.AWAITING_APPROVAL,
+                SalesOrder.RpaStatus.AWAITING_OV_QUANTITY_UPDATE,
             ]
         ).count()
         open_balance_kg = SalesOrder.objects.exclude(

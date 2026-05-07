@@ -142,7 +142,7 @@ class ContractManagedLotViewSet(viewsets.ModelViewSet):
 
         Regras:
         - sum(splits.quantity_kg) deve ser igual ao ``remaining_kg`` do lote.
-        - Bloqueia se houver OV criada em SAP (rpa_status em [executing, awaiting_approval, completed]).
+        - Bloqueia se houver OV criada em SAP (rpa_status em [executing, awaiting_ov_quantity_update, completed]).
         - Bloqueia se existir NF Entrega Futura vinculada (mesmo ``lot_number``).
         - Cria novos ContractBaseLot + ContractManagedLot (mesmo upload e dados do produtor)
           e cancela o lote original.
@@ -163,7 +163,7 @@ class ContractManagedLotViewSet(viewsets.ModelViewSet):
         # Reject if any SalesOrder has already been created in SAP.
         blocking_rpa = {
             SalesOrder.RpaStatus.EXECUTING,
-            SalesOrder.RpaStatus.AWAITING_APPROVAL,
+            SalesOrder.RpaStatus.AWAITING_OV_QUANTITY_UPDATE,
             SalesOrder.RpaStatus.COMPLETED,
         }
         if SalesOrder.objects.filter(managed_lot=managed, rpa_status__in=blocking_rpa).exists():

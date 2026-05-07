@@ -71,7 +71,7 @@ class DashboardKPIView(APIView):
             rpa_status__in=(
                 SalesOrder.RpaStatus.AWAITING_OV_CREATION,
                 SalesOrder.RpaStatus.EXECUTING,
-                SalesOrder.RpaStatus.AWAITING_APPROVAL,
+                SalesOrder.RpaStatus.AWAITING_OV_QUANTITY_UPDATE,
             )
         ).count()
         ov_open_balance_kg = _sum(
