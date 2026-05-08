@@ -118,6 +118,9 @@ class ShipmentRequestViewSet(viewsets.ModelViewSet):
             else:
                 total_qty = lot.base_lot.quantity_kg
 
+            _raw_year = (lot.base_lot.lot_number or '')[:2]
+            _lot_harvest_year = ('20' + _raw_year) if _raw_year.isdigit() else _raw_year
+
             SalesOrder.objects.create(
                 managed_lot=lot,
                 order_index=last_index + 1,
@@ -126,7 +129,7 @@ class ShipmentRequestViewSet(viewsets.ModelViewSet):
                 total_quantity_kg=total_qty,
                 balance_kg=total_qty,
                 freight_type_exit=lot.freight_type_exit,
-                harvest_year=shipment.harvest_year or (lot.base_lot.lot_number[:2] if lot.base_lot.lot_number else ''),
+                harvest_year=shipment.harvest_year or _lot_harvest_year,
                 product_sap_code='',
                 alternative_route=lot.route_info,
                 corridor=lot.corridor,

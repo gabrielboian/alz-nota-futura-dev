@@ -152,6 +152,11 @@ UNFOLD = {
                         "link": "/admin/core/participant/",
                     },
                     {
+                        "title": "Produtores",
+                        "icon": "agriculture",
+                        "link": "/admin/core/producer/",
+                    },
+                    {
                         "title": "Responsáveis Comerciais",
                         "icon": "support_agent",
                         "link": "/admin/core/commercialresponsible/",
@@ -164,17 +169,17 @@ UNFOLD = {
                     {
                         "title": "Tipos de Frete Saída",
                         "icon": "local_offer",
-                        "link": "/admin/core/tipofretsaida/",
+                        "link": "/admin/core/exitfreighttype/",
                     },
                     {
                         "title": "Transportadoras",
                         "icon": "local_shipping",
-                        "link": "/admin/core/transportadora/",
+                        "link": "/admin/core/carrier/",
                     },
                     {
                         "title": "Transportadoras ALZT",
                         "icon": "directions_bus",
-                        "link": "/admin/core/transportadoraalzt/",
+                        "link": "/admin/core/carrieralzt/",
                     },
                 ],
             },
