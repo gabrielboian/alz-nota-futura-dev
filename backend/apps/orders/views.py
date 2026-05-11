@@ -16,7 +16,7 @@ from apps.authentication.permissions import (
 from apps.core.models import TerminalDestination, TransshipmentLocation
 
 from .models import LoadingOrder, SalesOrder
-from .serializers import LoadingOrderSerializer, SalesOrderSerializer
+from .serializers import LoadingOrderSerializer, SalesOrderCommentSerializer, SalesOrderSerializer
 
 
 INCREASE_BALANCE_THRESHOLD_KG = Decimal('55000')
@@ -103,6 +103,9 @@ class SalesOrderViewSet(viewsets.ModelViewSet):
         created_before = self.request.query_params.get('created_before')
         if created_before:
             qs = qs.filter(created_at__lte=created_before)
+        rpa_error_type = self.request.query_params.get('rpa_error_type')
+        if rpa_error_type:
+            qs = qs.filter(rpa_error_type=rpa_error_type)
         return qs
 
     # ------------------------------------------------------------------
@@ -345,6 +348,89 @@ class SalesOrderViewSet(viewsets.ModelViewSet):
         )
         return Response(
             self.get_serializer(ov).data, status=status.HTTP_201_CREATED
+        )
+
+    @action(detail=True, methods=['post'], url_path='reprocess')
+    def reprocess(self, request, pk=None):
+        """Reprocess an OV that ended in a business or system exception.
+
+        Clones the OV (via revise_sales_order) with no data changes, moving
+        all active OCs to the new copy and leaving the errored one INVALIDATED.
+        The new OV gets rpa_status=AWAITING_OV_CREATION so the RPA picks it up.
+        """
+        from .services import revise_sales_order
+
+        ov = self.get_object()
+
+        if ov.rpa_error_type not in (
+            SalesOrder.RpaErrorType.BUSINESS_EXCEPTION,
+            SalesOrder.RpaErrorType.SYSTEM_EXCEPTION,
+        ):
+            return Response(
+                {'detail': 'OV não está em estado de exceção RPA.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if ov.ov_status in (SalesOrder.Status.CLOSED, SalesOrder.Status.INVALIDATED):
+            return Response(
+                {
+                    'detail': (
+                        f'Esta OV está "{ov.get_ov_status_display()}"'
+                        ' e não pode ser reprocessada.'
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        active_oc_ids = set(
+            LoadingOrder.objects.filter(
+                sales_order=ov, status=LoadingOrder.Status.ACTIVE
+            ).values_list('id', flat=True)
+        )
+
+        try:
+            new_ov = revise_sales_order(
+                ov,
+                changes={},
+                user=request.user if request.user.is_authenticated else None,
+                keep_loading_order_ids=active_oc_ids,
+            )
+        except ValueError as exc:
+            return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(self.get_serializer(new_ov).data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['get'], url_path='comments')
+    def list_comments(self, request, pk=None):
+        """List all analyst comments for this OV."""
+        from .models import SalesOrderComment
+
+        ov = self.get_object()
+        comments = SalesOrderComment.objects.filter(
+            sales_order=ov
+        ).select_related('user')
+        return Response(SalesOrderCommentSerializer(comments, many=True).data)
+
+    @action(detail=True, methods=['post'], url_path='add-comment')
+    def add_comment(self, request, pk=None):
+        """Add an analyst comment to this OV."""
+        from .models import SalesOrderComment
+
+        ov = self.get_object()
+        text = (request.data.get('text') or '').strip()
+        if not text:
+            return Response(
+                {'detail': 'Comentário não pode ser vazio.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        comment = SalesOrderComment.objects.create(
+            sales_order=ov,
+            user=request.user if request.user.is_authenticated else None,
+            text=text,
+        )
+        return Response(
+            SalesOrderCommentSerializer(comment).data,
+            status=status.HTTP_201_CREATED,
         )
 
 

@@ -12,7 +12,7 @@ import {
   type ContractManagedLot,
   type ContractManagedLotUpdate,
 } from '@/lib/api/contracts';
-import { lookupsApi } from '@/lib/api/lookups';
+import { lookupsApi, type Branch } from '@/lib/api/lookups';
 import { shipmentsApi } from '@/lib/api/shipments';
 import { getErrorMessage } from '@/lib/errors';
 import { notify } from '@/lib/notify';
@@ -201,6 +201,46 @@ export function ShipmentWizard({
 
   const billingLocked = isBillingCnpjLocked(lot);
 
+  // Reactively sync freight_agent when CIF billing_branch changes or FOB collection_point_code changes.
+  useEffect(() => {
+    if (!isOpen || !form.freight_type_exit) return;
+    const tipo = tipoFreteSaidaQuery.data?.find((t) => t.id === form.freight_type_exit);
+    const tipoName = (tipo?.name ?? '').toUpperCase();
+    if (tipoName.includes('CIF')) {
+      if (!form.billing_branch || !branchesQuery.data) return;
+      const branch = branchesQuery.data.find((b) => b.id === form.billing_branch);
+      const code = branch?.cif_transportadora_code ?? '';
+      setForm((s) => (s.freight_agent === code ? s : { ...s, freight_agent: code }));
+    } else if (tipoName.includes('FOB')) {
+      setForm((s) =>
+        s.freight_agent === s.collection_point_code
+          ? s
+          : { ...s, freight_agent: s.collection_point_code },
+      );
+    }
+  }, [
+    form.billing_branch,
+    form.collection_point_code,
+    form.freight_type_exit,
+    isOpen,
+    branchesQuery.data,
+    tipoFreteSaidaQuery.data,
+  ]);
+
+  // Auto-fill billing_branch from the contract's branch when branches load.
+  useEffect(() => {
+    if (!isOpen || !branchesQuery.data || !lot || form.billing_branch) return;
+    const branchName = (lot.base_lot_data?.branch_name ?? '').trim();
+    if (!branchName) return;
+    const match = branchesQuery.data.find(
+      (b) => b.sap_code.toLowerCase() === branchName.toLowerCase(),
+    );
+    // 3517 cannot be the emitter — leave null so user picks a valid TO alternative.
+    if (match && !/3517/.test(match.sap_code)) {
+      setForm((s) => (s.billing_branch ? s : { ...s, billing_branch: match.id }));
+    }
+  }, [isOpen, branchesQuery.data, lot, form.billing_branch]);
+
   const submitMutation = useMutation({
     mutationFn: async () => {
       if (!lot) throw new Error('Lote inválido.');
@@ -333,6 +373,7 @@ export function ShipmentWizard({
       }
       if (!form.billing_producer_name.trim()) errs.billing_producer_name = 'Informe o nome do produtor de faturamento.';
       if (!form.commercial_responsible) errs.commercial_responsible = 'Selecione o comercial responsável.';
+      if (!form.billing_branch) errs.billing_branch = 'Selecione a filial emissora da ordem.';
     }
     setFieldErrors(errs);
     return Object.keys(errs).length === 0;
@@ -386,7 +427,8 @@ export function ShipmentWizard({
               showLogistics={isApprove}
               corridors={corridorsQuery.data ?? []}
               tipoFreteSaida={tipoFreteSaidaQuery.data ?? []}
-              cifFreightAgentCode={lot?.cif_freight_agent_code ?? ''}
+              branches={branchesQuery.data ?? []}
+              billingBranch={form.billing_branch}
             />
           )}
           {step === 4 && (
@@ -706,7 +748,8 @@ function Step3({
   showLogistics = false,
   corridors = [],
   tipoFreteSaida = [],
-  cifFreightAgentCode = '',
+  branches = [],
+  billingBranch = null,
 }: {
   form: FormState;
   update: UpdateFn;
@@ -716,13 +759,15 @@ function Step3({
   showLogistics?: boolean;
   corridors?: { id: string; name: string }[];
   tipoFreteSaida?: { id: string; name: string }[];
-  cifFreightAgentCode?: string;
+  branches?: Branch[];
+  billingBranch?: string | null;
 }) {
   const selectedTipo = tipoFreteSaida.find((t) => t.id === form.freight_type_exit);
   const tipoName = (selectedTipo?.name ?? '').toUpperCase();
   const isCIF = tipoName.includes('CIF');
   const isFOB = tipoName.includes('FOB');
   const isCPT = tipoName.includes('CPT');
+  const effectiveCifCode = branches.find((b) => b.id === billingBranch)?.cif_transportadora_code ?? '';
 
   function handleFreightTypeChange(value: string | null) {
     update('freight_type_exit', value);
@@ -731,7 +776,7 @@ function Step3({
     const tipo = tipoFreteSaida.find((t) => t.id === value);
     const name = (tipo?.name ?? '').toUpperCase();
     if (name.includes('CIF')) {
-      update('freight_agent', cifFreightAgentCode);
+      update('freight_agent', effectiveCifCode);
       update('freight_agents_cpt', []);
     } else if (name.includes('FOB')) {
       update('freight_agent', form.collection_point_code);
@@ -921,10 +966,16 @@ function Step3({
             {isCIF && (
               <>
                 <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-text-primary">
-                  {form.freight_agent || <span className="text-text-tertiary">Não configurado na filial</span>}
+                  {form.freight_agent || (
+                    <span className="text-text-tertiary">
+                      {billingBranch ? 'Não configurado na filial' : 'Aguardando filial emissora'}
+                    </span>
+                  )}
                 </div>
                 <span className="mt-1 block text-xs text-text-tertiary">
-                  Preenchido automaticamente com a transportadora CIF da filial emissora.
+                  {billingBranch
+                    ? 'Preenchido automaticamente com a transportadora CIF da filial emissora.'
+                    : 'Será preenchido ao selecionar a filial emissora (próximo passo).'}
                 </span>
               </>
             )}
@@ -1038,7 +1089,7 @@ function Step4({
   fieldErrors: Record<string, string>;
   participants: { id: string; name: string; inscricao_estadual: string; cnpj: string }[];
   commercials: { id: string; name: string }[];
-  branches: { id: string; sap_code: string; description: string }[];
+  branches: Branch[];
   billingLocked: boolean;
   notes: string;
   setNotes: (v: string) => void;
@@ -1147,14 +1198,23 @@ function Step4({
       </div>
 
       <div className="sm:col-span-2">
-        <Label>Filial Emissora da Ordem</Label>
+        <Label required>Filial Emissora da Ordem</Label>
+        {billingLocked && (
+          <div className="mb-2 rounded-md border border-warning/40 bg-warning-light/40 px-3 py-2 text-xs text-text-secondary">
+            A filial <strong>3517</strong> não pode ser emissora da ordem. Selecione uma das filiais
+            do Tocantins disponíveis abaixo (3504, 3509, 3518 ou demais filiais TO).
+          </div>
+        )}
         <select
           value={form.billing_branch ?? ''}
           onChange={(e) => update('billing_branch', e.target.value || null)}
           className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:border-brand-blue focus:outline-none"
         >
           <option value="">Selecione…</option>
-          {branches.map((b) => (
+          {(billingLocked
+            ? branches.filter((b) => b.state === 'TO' && !/3517/.test(b.sap_code))
+            : branches
+          ).map((b) => (
             <option key={b.id} value={b.id}>
               {b.sap_code} — {b.description}
             </option>

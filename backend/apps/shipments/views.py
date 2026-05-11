@@ -54,6 +54,12 @@ class ShipmentRequestViewSet(viewsets.ModelViewSet):
         status_param = self.request.query_params.get('status')
         if status_param:
             qs = qs.filter(status=status_param)
+        lot_number = self.request.query_params.get('lot_number')
+        if lot_number:
+            qs = qs.filter(managed_lot__base_lot__lot_number__icontains=lot_number)
+        producer_name = self.request.query_params.get('producer_name')
+        if producer_name:
+            qs = qs.filter(managed_lot__base_lot__producer_name__icontains=producer_name)
         return qs
 
     def perform_create(self, serializer):

@@ -7,11 +7,15 @@ import { useQuery } from '@tanstack/react-query';
 import {
   ArrowLeft,
   ArrowRight,
+  AlertTriangle,
   CheckCircle2,
   Clock,
   Edit3,
+  MessageSquare,
   Plus,
+  RefreshCw,
   Search,
+  Zap,
 } from 'lucide-react';
 
 import { contractsApi } from '@/lib/api/contracts';
@@ -25,6 +29,8 @@ import { Badge } from '@/components/ui/badge';
 import { AlterOvModal } from '@/components/shipments/alter-ov-modal';
 import { IncreaseBalanceModal } from '@/components/shipments/increase-balance-modal';
 import { RegisterManualOVModal } from '@/components/shipments/register-manual-ov-modal';
+import { ReprocessOvModal } from '@/components/shipments/reprocess-ov-modal';
+import { OvCommentsModal } from '@/components/shipments/ov-comments-modal';
 
 type PageParams = { lotId: string };
 
@@ -77,6 +83,8 @@ export default function LoteDetailPage({ params }: { params: Promise<PageParams>
   const [alterOv, setAlterOv] = useState<SalesOrder | null>(null);
   const [increaseOv, setIncreaseOv] = useState<SalesOrder | null>(null);
   const [registerManualOpen, setRegisterManualOpen] = useState(false);
+  const [reprocessOv, setReprocessOv] = useState<SalesOrder | null>(null);
+  const [commentsOv, setCommentsOv] = useState<SalesOrder | null>(null);
 
   const lotQuery = useQuery({
     queryKey: ['managed-lot', lotId],
@@ -292,6 +300,8 @@ export default function LoteDetailPage({ params }: { params: Promise<PageParams>
               ov={ov}
               index={idx + 1}
               onAlter={() => setAlterOv(ov)}
+              onReprocess={() => setReprocessOv(ov)}
+              onComments={() => setCommentsOv(ov)}
             />
           ))}
         </div>
@@ -367,6 +377,21 @@ export default function LoteDetailPage({ params }: { params: Promise<PageParams>
           lotQuery.refetch();
         }}
       />
+      <ReprocessOvModal
+        ov={reprocessOv}
+        isOpen={reprocessOv !== null}
+        onClose={() => setReprocessOv(null)}
+        onSuccess={() => {
+          setReprocessOv(null);
+          ovsQuery.refetch();
+          lotQuery.refetch();
+        }}
+      />
+      <OvCommentsModal
+        ov={commentsOv}
+        isOpen={commentsOv !== null}
+        onClose={() => setCommentsOv(null)}
+      />
     </div>
   );
 }
@@ -375,14 +400,21 @@ function OVCard({
   ov,
   index,
   onAlter,
+  onReprocess,
+  onComments,
 }: {
   ov: SalesOrder;
   index: number;
   onAlter: () => void;
+  onReprocess: () => void;
+  onComments: () => void;
 }) {
   const totalOc = ov.loading_orders.length;
   const active = ov.ov_status === 'in_progress' || ov.ov_status === 'pending';
   const hasRpaIssue = ov.rpa_status === 'error';
+  const isException =
+    ov.rpa_error_type === 'business_exception' ||
+    ov.rpa_error_type === 'system_exception';
 
   const dmTaskQuery = useQuery({
     queryKey: ['rpa-dm-ticket', ov.id],
@@ -441,6 +473,48 @@ function OVCard({
           {ov.billing_branch_name || 'Filial —'}
         </div>
 
+        {/* Exception banner */}
+        {isException && (
+          <div
+            className={`flex items-start gap-2 rounded-lg border p-3 ${
+              ov.rpa_error_type === 'business_exception'
+                ? 'border-orange-200 bg-orange-50'
+                : 'border-red-200 bg-red-50'
+            }`}
+          >
+            {ov.rpa_error_type === 'business_exception' ? (
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-orange-500" />
+            ) : (
+              <Zap className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
+            )}
+            <div className="min-w-0 flex-1">
+              <p
+                className={`text-xs font-semibold ${
+                  ov.rpa_error_type === 'business_exception'
+                    ? 'text-orange-700'
+                    : 'text-red-700'
+                }`}
+              >
+                {ov.rpa_error_type === 'business_exception'
+                  ? 'Exceção de Negócio'
+                  : 'Exceção de Sistema'}
+              </p>
+              {ov.rpa_error_message && (
+                <p
+                  className={`mt-0.5 truncate font-mono text-xs ${
+                    ov.rpa_error_type === 'business_exception'
+                      ? 'text-orange-600'
+                      : 'text-red-600'
+                  }`}
+                  title={ov.rpa_error_message}
+                >
+                  {ov.rpa_error_message}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
         <div className="flex items-center gap-2 text-sm">
           <div className="flex-1">
             <div className="text-xs text-text-tertiary">LOCAL DE TRANSBORDO</div>
@@ -492,6 +566,24 @@ function OVCard({
             {totalOc} ordem{totalOc === 1 ? '' : 's'} de carregamento
           </div>
           <div className="flex items-center gap-2">
+            {isException && (
+              <button
+                type="button"
+                onClick={onReprocess}
+                title="Reprocessar OV — clonar para nova tentativa via RPA"
+                className="inline-flex items-center gap-1 rounded-md bg-brand-blue px-3 py-1.5 text-xs font-medium text-white hover:opacity-90"
+              >
+                <RefreshCw className="h-3.5 w-3.5" /> Reprocessar
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={onComments}
+              title="Comentários e observações"
+              className="inline-flex items-center gap-1 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-text-primary hover:bg-slate-50"
+            >
+              <MessageSquare className="h-3.5 w-3.5" /> Comentários
+            </button>
             <button
               type="button"
               disabled

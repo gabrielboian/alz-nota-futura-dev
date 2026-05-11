@@ -167,7 +167,7 @@ export const contractsApi = {
     return response.data;
   },
 
-  listManagedLots: async (params?: { page?: number; page_size?: number; search?: string; ordering?: string; status?: string }) => {
+  listManagedLots: async (params?: { page?: number; page_size?: number; search?: string; ordering?: string; status?: string; lot_number?: string; producer_name?: string; harvest_year?: string; product?: string }) => {
     const response = await apiClient.get<Paginated<ContractManagedLot>>(
       '/contracts/lots/',
       { params }

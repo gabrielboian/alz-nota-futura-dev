@@ -72,7 +72,13 @@ class ContractManagedLotSerializer(serializers.ModelSerializer):
         read_only_fields = ('id', 'released_at', 'released_by', 'created_at', 'updated_at')
 
     def get_cif_freight_agent_code(self, obj) -> str:
-        """Returns the CIF transportadora code for the lot's emitting branch."""
+        """Returns the CIF transportadora code for the lot's emitting branch (billing_branch).
+
+        Prefers billing_branch FK (filial emissora da ordem) when set.
+        Falls back to base_lot.branch_name lookup for backwards compatibility.
+        """
+        if obj.billing_branch_id and obj.billing_branch and obj.billing_branch.cif_transportadora:
+            return obj.billing_branch.cif_transportadora.code
         branch_name = (obj.base_lot.branch_name or '').strip() if obj.base_lot else ''
         if not branch_name:
             return ''

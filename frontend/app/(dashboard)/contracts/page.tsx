@@ -7,7 +7,7 @@ import { Upload, Download } from 'lucide-react';
 import { contractsApi } from '@/lib/api/contracts';
 import type { ContractManagedLot } from '@/lib/api/contracts';
 import { DataTable } from '@/components/ui/data-table';
-import type { Column } from '@/components/ui/data-table';
+import type { Column, ColumnFilter } from '@/components/ui/data-table';
 import { Modal } from '@/components/ui/modal';
 import { FileUpload } from '@/components/ui/file-upload';
 import { ButtonPrimary } from '@/components/ui/button-primary';
@@ -36,10 +36,14 @@ export default function ContractsPage() {
   const { page, pageSize, setPage, setPageSize } = useUrlPagination();
   const [uploadOpen, setUploadOpen] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [filters, setFilters] = useState<ColumnFilter[]>([]);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['contract-managed-lots', page, pageSize],
-    queryFn: () => contractsApi.listManagedLots({ page, page_size: pageSize }),
+    queryKey: ['contract-managed-lots', page, pageSize, filters],
+    queryFn: () => {
+      const filterParams = filters.reduce((acc, f) => ({ ...acc, [f.key]: f.value }), {} as Record<string, string>);
+      return contractsApi.listManagedLots({ page, page_size: pageSize, ...filterParams });
+    },
   });
 
   const uploadMutation = useMutation({
@@ -78,17 +82,27 @@ export default function ContractsPage() {
       key: 'lot_number',
       header: 'Nº Lote',
       width: '160px',
+      filterable: true,
+      filterType: 'text',
       render: (row) => row.base_lot_data?.lot_number ?? '-',
     },
     {
       key: 'producer_name',
       header: 'Produtor',
+      filterable: true,
+      filterType: 'text',
       render: (row) => row.base_lot_data?.producer_name ?? '-',
     },
     {
       key: 'product',
       header: 'Produto',
       width: '180px',
+      filterable: true,
+      filterType: 'select',
+      filterOptions: [
+        { label: 'Soja', value: 'SOJA' },
+        { label: 'Milho', value: 'MILHO' },
+      ],
       render: (row) => row.base_lot_data?.product ?? '-',
     },
     {
@@ -113,12 +127,23 @@ export default function ContractsPage() {
       key: 'harvest_year',
       header: 'Safra',
       width: '90px',
+      filterable: true,
+      filterType: 'text',
       render: (row) => row.harvest_year || '-',
     },
     {
       key: 'status',
       header: 'Status',
       width: '200px',
+      filterable: true,
+      filterType: 'select',
+      filterOptions: [
+        { label: 'Aguardando solicitação', value: 'awaiting_request' },
+        { label: 'Aguardando aprovação', value: 'awaiting_approval' },
+        { label: 'Em andamento', value: 'in_progress' },
+        { label: 'Finalizado', value: 'finished' },
+        { label: 'Cancelado', value: 'cancelled' },
+      ],
       render: (row) => (
         <Badge variant={STATUS_VARIANT[row.status] ?? 'default'}>{row.status_display}</Badge>
       ),
@@ -144,6 +169,8 @@ export default function ContractsPage() {
         data={data?.results ?? []}
         totalItems={data?.count ?? 0}
         currentPage={page}
+        filters={filters}
+        onFilterChange={(f) => { setFilters(f); setPage(1); }}
         pagination={{
           enabled: true,
           pageSize,

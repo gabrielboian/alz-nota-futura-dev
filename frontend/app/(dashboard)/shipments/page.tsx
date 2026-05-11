@@ -7,7 +7,7 @@ import { Eye, Truck } from 'lucide-react';
 import { contractsApi } from '@/lib/api/contracts';
 import type { ContractManagedLot } from '@/lib/api/contracts';
 import { DataTable } from '@/components/ui/data-table';
-import type { Column } from '@/components/ui/data-table';
+import type { Column, ColumnFilter } from '@/components/ui/data-table';
 import { Modal } from '@/components/ui/modal';
 import { Badge } from '@/components/ui/badge';
 import { ShipmentWizard } from '@/components/shipments/shipment-wizard';
@@ -25,15 +25,19 @@ export default function ShipmentsPage() {
   const { page, pageSize, setPage, setPageSize } = useUrlPagination();
   const [selectedLot, setSelectedLot] = useState<ContractManagedLot | null>(null);
   const [viewingLot, setViewingLot] = useState<ContractManagedLot | null>(null);
+  const [filters, setFilters] = useState<ColumnFilter[]>([]);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['shipment-awaiting-lots', page, pageSize],
-    queryFn: () =>
-      contractsApi.listManagedLots({
+    queryKey: ['shipment-awaiting-lots', page, pageSize, filters],
+    queryFn: () => {
+      const filterParams = filters.reduce((acc, f) => ({ ...acc, [f.key]: f.value }), {} as Record<string, string>);
+      return contractsApi.listManagedLots({
         page,
         page_size: pageSize,
         status: 'awaiting_request',
-      }),
+        ...filterParams,
+      });
+    },
   });
 
   function openRequest(lot: ContractManagedLot) {
@@ -54,17 +58,27 @@ export default function ShipmentsPage() {
       key: 'lot_number',
       header: 'Nº Lote',
       width: '140px',
+      filterable: true,
+      filterType: 'text',
       render: (row) => row.base_lot_data?.lot_number ?? '-',
     },
     {
       key: 'producer_name',
       header: 'Produtor',
+      filterable: true,
+      filterType: 'text',
       render: (row) => row.base_lot_data?.producer_name ?? '-',
     },
     {
       key: 'product',
       header: 'Produto',
       width: '160px',
+      filterable: true,
+      filterType: 'select',
+      filterOptions: [
+        { label: 'Soja', value: 'SOJA' },
+        { label: 'Milho', value: 'MILHO' },
+      ],
       render: (row) => row.base_lot_data?.product ?? '-',
     },
     {
@@ -77,6 +91,8 @@ export default function ShipmentsPage() {
       key: 'harvest_year',
       header: 'Safra',
       width: '90px',
+      filterable: true,
+      filterType: 'text',
       render: (row) => row.harvest_year || '-',
     },
     {
@@ -127,6 +143,8 @@ export default function ShipmentsPage() {
         data={data?.results ?? []}
         totalItems={data?.count ?? 0}
         currentPage={page}
+        filters={filters}
+        onFilterChange={(f) => { setFilters(f); setPage(1); }}
         pagination={{
           enabled: true,
           pageSize,

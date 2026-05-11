@@ -6,7 +6,7 @@ import { Plus } from 'lucide-react';
 
 import { invoicesApi, type NFFutureDelivery, type NFFutureDeliveryStatus } from '@/lib/api/invoices';
 import type { ContractBaseLot } from '@/lib/api/contracts';
-import { DataTable, type Column } from '@/components/ui/data-table';
+import { DataTable, type Column, type ColumnFilter } from '@/components/ui/data-table';
 import { Modal } from '@/components/ui/modal';
 import { Tabs } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -56,10 +56,14 @@ export default function NFBalancesPage() {
     motherNfId: string | null;
     motherNfNumber: string;
   }>({ motherNfId: null, motherNfNumber: '' });
+  const [tableFilters, setTableFilters] = useState<ColumnFilter[]>([]);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['nf-future-delivery', status, page, pageSize],
-    queryFn: () => invoicesApi.listFutureDelivery({ status, page, page_size: pageSize }),
+    queryKey: ['nf-future-delivery', status, page, pageSize, tableFilters],
+    queryFn: () => {
+      const filterParams = tableFilters.reduce((acc, f) => ({ ...acc, [f.key]: f.value }), {} as Record<string, string>);
+      return invoicesApi.listFutureDelivery({ status, page, page_size: pageSize, ...filterParams });
+    },
   });
 
   const uploadMutation = useMutation({
@@ -115,18 +119,18 @@ export default function NFBalancesPage() {
         <Badge variant={r.status === 'finished' ? 'success' : 'info'}>{r.status_display}</Badge>
       ),
     },
-    { key: 'nf_number', header: 'Nº NF', width: '110px', render: (r) => r.nf_number || '-' },
+    { key: 'nf_number', header: 'Nº NF', width: '110px', filterable: true, filterType: 'text', render: (r) => r.nf_number || '-' },
     { key: 'quantity_kg', header: 'Qtd NF (kg)', width: '130px', render: (r) => formatDecimal(r.quantity_kg) },
     { key: 'unit_value', header: 'Vlr Unitário', width: '130px', render: (r) => formatCurrency(r.unit_value) },
     { key: 'gross_value', header: 'Vlr Bruto', width: '150px', render: (r) => formatCurrency(r.gross_value) },
     { key: 'branch_name', header: 'Filial', render: (r) => r.branch_name || '-' },
-    { key: 'product', header: 'Produto', width: '140px', render: (r) => r.product || '-' },
-    { key: 'harvest_year', header: 'Safra', width: '90px', render: (r) => r.harvest_year || '-' },
+    { key: 'product', header: 'Produto', width: '140px', filterable: true, filterType: 'select', filterOptions: [{ label: 'Soja', value: 'SOJA' }, { label: 'Milho', value: 'MILHO' }], render: (r) => r.product || '-' },
+    { key: 'harvest_year', header: 'Safra', width: '90px', filterable: true, filterType: 'text', render: (r) => r.harvest_year || '-' },
     { key: 'issue_date', header: 'Emissão', width: '110px', render: (r) => formatDate(r.issue_date) },
     { key: 'sap_code', header: 'Cód SAP', width: '110px', render: (r) => r.sap_code || '-' },
     { key: 'state_registration', header: 'Nº IE', width: '130px', render: (r) => r.state_registration || '-' },
-    { key: 'lot_number', header: 'Nº Lote', width: '130px', render: (r) => r.lot_number || '-' },
-    { key: 'producer_name', header: 'Produtor', render: (r) => r.producer_name || '-' },
+    { key: 'lot_number', header: 'Nº Lote', width: '130px', filterable: true, filterType: 'text', render: (r) => r.lot_number || '-' },
+    { key: 'producer_name', header: 'Produtor', filterable: true, filterType: 'text', render: (r) => r.producer_name || '-' },
     { key: 'delivered_quantity_kg', header: 'Qtd Entregue', width: '140px', render: (r) => formatDecimal(r.delivered_quantity_kg) },
     { key: 'remaining_quantity_kg', header: 'Saldo a entregar', width: '150px', render: (r) => formatDecimal(r.remaining_quantity_kg) },
     {
@@ -200,6 +204,8 @@ export default function NFBalancesPage() {
         data={data?.results ?? []}
         totalItems={data?.count ?? 0}
         currentPage={page}
+        filters={tableFilters}
+        onFilterChange={(f) => { setTableFilters(f); setPage(1); }}
         pagination={{
           enabled: true,
           pageSize,

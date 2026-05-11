@@ -117,7 +117,7 @@ class NFFutureDeliveryViewSet(viewsets.ModelViewSet):
         qs = super().get_queryset()
         lot_number = self.request.query_params.get('lot_number')
         if lot_number:
-            qs = qs.filter(lot_number=lot_number)
+            qs = qs.filter(lot_number__icontains=lot_number)
         nf_key = self.request.query_params.get('nf_key')
         if nf_key:
             qs = qs.filter(nf_key=nf_key)
@@ -127,6 +127,18 @@ class NFFutureDeliveryViewSet(viewsets.ModelViewSet):
         status_param = self.request.query_params.get('status')
         if status_param:
             qs = qs.filter(status=status_param)
+        nf_number = self.request.query_params.get('nf_number')
+        if nf_number:
+            qs = qs.filter(nf_number__icontains=nf_number)
+        producer_name = self.request.query_params.get('producer_name')
+        if producer_name:
+            qs = qs.filter(producer_name__icontains=producer_name)
+        product = self.request.query_params.get('product')
+        if product:
+            qs = qs.filter(product__icontains=product)
+        harvest_year = self.request.query_params.get('harvest_year')
+        if harvest_year:
+            qs = qs.filter(harvest_year__icontains=harvest_year)
         return qs
 
     @action(detail=False, methods=['post'], url_path='upload-xml')

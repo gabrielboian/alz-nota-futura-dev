@@ -82,6 +82,10 @@ export interface ListNFFutureDeliveryParams {
   search?: string;
   ordering?: string;
   lot_number?: string;
+  nf_number?: string;
+  producer_name?: string;
+  product?: string;
+  harvest_year?: string;
   status?: NFFutureDeliveryStatus;
 }
 

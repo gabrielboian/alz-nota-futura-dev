@@ -1,12 +1,12 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Download, ExternalLink } from 'lucide-react';
 
 import { fiscalApi, type FiscalInstruction, type PersonType } from '@/lib/api/fiscal';
 import { lookupsApi, type Branch } from '@/lib/api/lookups';
-import { DataTable, type Column } from '@/components/ui/data-table';
+import { DataTable, type Column, type ColumnFilter } from '@/components/ui/data-table';
 import { Badge } from '@/components/ui/badge';
 import { notify } from '@/lib/notify';
 import { getErrorMessage } from '@/lib/errors';
@@ -16,57 +16,22 @@ const UF_OPTIONS = [
   'AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO',
 ];
 
-function useQueryParamState(key: string, defaultValue: string = '') {
-  if (typeof window === 'undefined') {
-    return { value: defaultValue, set: (_v: string) => {} };
-  }
-  const url = new URL(window.location.href);
-  const current = url.searchParams.get(key) ?? defaultValue;
-  return {
-    value: current,
-    set: (v: string) => {
-      const next = new URL(window.location.href);
-      if (v) next.searchParams.set(key, v);
-      else next.searchParams.delete(key);
-      window.history.replaceState({}, '', next.toString());
-    },
-  };
-}
-
 export default function FiscalInstructionsPage() {
   const { page, pageSize, setPage, setPageSize } = useUrlPagination();
-
-  const product = useQueryParamState('product');
-  const personType = useQueryParamState('person_type');
-  const issuerState = useQueryParamState('issuer_state');
-  const branch = useQueryParamState('branch');
-  const harvestYear = useQueryParamState('harvest_year');
+  const [filters, setFilters] = useState<ColumnFilter[]>([]);
 
   const { data: branches } = useQuery({
     queryKey: ['lookups', 'branches'],
     queryFn: () => lookupsApi.branches(),
   });
 
-  const branchOptions = useMemo(
-    () => [
-      { value: '', label: 'Todas as filiais' },
-      ...(branches ?? []).map((b: Branch) => ({
-        value: b.id,
-        label: `${b.sap_code} — ${b.description}`,
-      })),
-    ],
-    [branches],
-  );
+  const filterParams = filters.reduce((acc, f) => ({ ...acc, [f.key]: f.value }), {} as Record<string, string>);
 
   const listParams = {
     page,
     page_size: pageSize,
     is_active: true,
-    ...(product.value ? { product: product.value } : {}),
-    ...(personType.value ? { person_type: personType.value as PersonType } : {}),
-    ...(issuerState.value ? { issuer_state: issuerState.value } : {}),
-    ...(branch.value ? { branch: branch.value } : {}),
-    ...(harvestYear.value ? { harvest_year: harvestYear.value } : {}),
+    ...filterParams,
   };
 
   const { data, isLoading } = useQuery({
@@ -103,45 +68,65 @@ export default function FiscalInstructionsPage() {
     notify.warning('Esta instrução não possui arquivo anexado.');
   }
 
-  function setFilter(setter: (v: string) => void, value: string) {
-    setter(value);
-    setPage(1);
-  }
-
   const columns: Column<FiscalInstruction>[] = [
     {
       key: 'instruction_name',
       header: 'Orientação fiscal',
+      filterable: true,
+      filterType: 'text',
       render: (r) => r.instruction_name || '-',
     },
     {
-      key: 'branch_name',
+      key: 'branch',
       header: 'Filial',
       width: '180px',
+      filterable: true,
+      filterType: 'select',
+      filterOptions: (branches ?? []).map((b: Branch) => ({
+        value: b.id,
+        label: `${b.sap_code} — ${b.description}`,
+      })),
       render: (r) => r.branch_name || '-',
     },
     {
       key: 'harvest_year',
       header: 'Safra',
       width: '90px',
+      filterable: true,
+      filterType: 'text',
       render: (r) => r.harvest_year || '-',
     },
     {
       key: 'product',
       header: 'Produto',
       width: '120px',
+      filterable: true,
+      filterType: 'select',
+      filterOptions: [
+        { label: 'Soja', value: 'SOJA' },
+        { label: 'Milho', value: 'MILHO' },
+      ],
       render: (r) => r.product || '-',
     },
     {
       key: 'person_type',
       header: 'Emitente',
       width: '110px',
+      filterable: true,
+      filterType: 'select',
+      filterOptions: [
+        { label: 'Pessoa Física (PF)', value: 'PF' },
+        { label: 'Pessoa Jurídica (PJ)', value: 'PJ' },
+      ],
       render: (r) => r.person_type_display,
     },
     {
       key: 'issuer_state',
       header: 'UF emitente',
       width: '110px',
+      filterable: true,
+      filterType: 'select',
+      filterOptions: UF_OPTIONS.map((uf) => ({ label: uf, value: uf })),
       render: (r) => r.issuer_state || '-',
     },
     {
@@ -202,60 +187,13 @@ export default function FiscalInstructionsPage() {
         </p>
       </div>
 
-      <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-5">
-        <FilterSelect
-          label="Filial"
-          value={branch.value}
-          onChange={(v) => setFilter(branch.set, v)}
-          options={branchOptions}
-        />
-        <FilterSelect
-          label="Produto"
-          value={product.value}
-          onChange={(v) => setFilter(product.set, v)}
-          options={[
-            { value: '', label: 'Todos os produtos' },
-            { value: 'SOJA', label: 'Soja' },
-            { value: 'MILHO', label: 'Milho' },
-          ]}
-        />
-        <FilterSelect
-          label="Emitente"
-          value={personType.value}
-          onChange={(v) => setFilter(personType.set, v)}
-          options={[
-            { value: '', label: 'Todos' },
-            { value: 'PF', label: 'Pessoa Física (PF)' },
-            { value: 'PJ', label: 'Pessoa Jurídica (PJ)' },
-          ]}
-        />
-        <FilterSelect
-          label="UF emitente"
-          value={issuerState.value}
-          onChange={(v) => setFilter(issuerState.set, v)}
-          options={[
-            { value: '', label: 'Todos os estados' },
-            ...UF_OPTIONS.map((uf) => ({ value: uf, label: uf })),
-          ]}
-        />
-        <FilterSelect
-          label="Safra"
-          value={harvestYear.value}
-          onChange={(v) => setFilter(harvestYear.set, v)}
-          options={[
-            { value: '', label: 'Todas' },
-            { value: '2025', label: '2025' },
-            { value: '2026', label: '2026' },
-            { value: '2027', label: '2027' },
-          ]}
-        />
-      </div>
-
       <DataTable<FiscalInstruction>
         columns={columns}
         data={data?.results ?? []}
         totalItems={data?.count ?? 0}
         currentPage={page}
+        filters={filters}
+        onFilterChange={(f) => { setFilters(f); setPage(1); }}
         pagination={{
           enabled: true,
           pageSize,
@@ -272,31 +210,5 @@ export default function FiscalInstructionsPage() {
         </div>
       )}
     </div>
-  );
-}
-
-interface FilterSelectProps {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  options: { value: string; label: string }[];
-}
-
-function FilterSelect({ label, value, onChange, options }: FilterSelectProps) {
-  return (
-    <label className="block text-sm">
-      <span className="text-text-tertiary">{label}</span>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="mt-1 block h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm focus:border-brand-blue focus:outline-none"
-      >
-        {options.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
-      </select>
-    </label>
   );
 }

@@ -241,3 +241,33 @@ class LoadingOrder(models.Model):
 
     def __str__(self) -> str:
         return f'{self.oc_number} ({self.plate})'
+
+
+class SalesOrderComment(models.Model):
+    """Comentário/observação de um analista sobre uma OV."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    sales_order = models.ForeignKey(
+        SalesOrder,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name=_('Ordem de Venda'),
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='sales_order_comments',
+        verbose_name=_('Usuário'),
+    )
+    text = models.TextField(_('Comentário'))
+    created_at = models.DateTimeField(_('Criado em'), auto_now_add=True)
+
+    class Meta:
+        verbose_name = _('Comentário OV')
+        verbose_name_plural = _('Comentários OV')
+        ordering = ['created_at']
+
+    def __str__(self) -> str:
+        return f'Comentário {self.sales_order_id} por {self.user}'

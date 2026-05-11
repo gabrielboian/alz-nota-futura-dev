@@ -89,11 +89,21 @@ export interface ListSalesOrdersParams {
   managed_lot?: string;
   ov_status?: SalesOrderStatus;
   rpa_status?: SalesOrderRpaStatus;
+  rpa_error_type?: 'business_exception' | 'system_exception';
   has_rfl?: 'true' | 'false';
   product?: string;
   cpf_cnpj?: string;
   created_after?: string;
   created_before?: string;
+}
+
+export interface OvComment {
+  id: string;
+  sales_order: string;
+  user: string | null;
+  user_display: string;
+  text: string;
+  created_at: string;
 }
 
 export interface AlterSalesOrderPayload {
@@ -139,6 +149,28 @@ export const ordersApi = {
     const response = await apiClient.post<{ revised: number; errors: { id: string; detail: string }[] }>(
       '/orders/sales-orders/bulk-rfl/',
       { ids, rfl_value_kg }
+    );
+    return response.data;
+  },
+
+  reprocess: async (id: string) => {
+    const response = await apiClient.post<SalesOrder>(
+      `/orders/sales-orders/${id}/reprocess/`
+    );
+    return response.data;
+  },
+
+  listComments: async (id: string) => {
+    const response = await apiClient.get<OvComment[]>(
+      `/orders/sales-orders/${id}/comments/`
+    );
+    return response.data;
+  },
+
+  addComment: async (id: string, text: string) => {
+    const response = await apiClient.post<OvComment>(
+      `/orders/sales-orders/${id}/add-comment/`,
+      { text }
     );
     return response.data;
   },

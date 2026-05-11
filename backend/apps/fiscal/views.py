@@ -62,6 +62,9 @@ class FiscalInstructionViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset()
+        instruction_name = self.request.query_params.get('instruction_name')
+        if instruction_name:
+            qs = qs.filter(instruction_name__icontains=instruction_name)
         branch = self.request.query_params.get('branch')
         if branch:
             qs = qs.filter(branch_id=branch)

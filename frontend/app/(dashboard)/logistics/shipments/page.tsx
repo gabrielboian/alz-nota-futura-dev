@@ -10,7 +10,7 @@ import type { ShipmentRequest, ShipmentStatus } from '@/lib/api/shipments';
 import { contractsApi } from '@/lib/api/contracts';
 import type { ContractManagedLot } from '@/lib/api/contracts';
 import { DataTable } from '@/components/ui/data-table';
-import type { Column } from '@/components/ui/data-table';
+import type { Column, ColumnFilter } from '@/components/ui/data-table';
 import { Badge } from '@/components/ui/badge';
 import { Modal } from '@/components/ui/modal';
 import { Tabs } from '@/components/ui/tabs';
@@ -59,29 +59,37 @@ export default function LogisticsShipmentsPage() {
   const [approving, setApproving] = useState<ShipmentRequest | null>(null);
   const [rejectNotes, setRejectNotes] = useState('');
   const [actionError, setActionError] = useState<string | null>(null);
+  const [requestFilters, setRequestFilters] = useState<ColumnFilter[]>([]);
+  const [lotFilters, setLotFilters] = useState<ColumnFilter[]>([]);
 
   const isRequestTab = activeTab === 'pending';
 
   const requestsQuery = useQuery({
-    queryKey: ['shipment-requests', page, pageSize, 'pending'],
-    queryFn: () =>
-      shipmentsApi.list({
+    queryKey: ['shipment-requests', page, pageSize, 'pending', requestFilters],
+    queryFn: () => {
+      const filterParams = requestFilters.reduce((acc, f) => ({ ...acc, [f.key]: f.value }), {} as Record<string, string>);
+      return shipmentsApi.list({
         page,
         page_size: pageSize,
         status: 'pending' as ShipmentStatus,
-      }),
+        ...filterParams,
+      });
+    },
     enabled: isRequestTab,
   });
 
   const lotsQuery = useQuery({
-    queryKey: ['managed-lots', 'logistics', page, pageSize, activeTab],
-    queryFn: () =>
-      contractsApi.listManagedLots({
+    queryKey: ['managed-lots', 'logistics', page, pageSize, activeTab, lotFilters],
+    queryFn: () => {
+      const filterParams = lotFilters.reduce((acc, f) => ({ ...acc, [f.key]: f.value }), {} as Record<string, string>);
+      return contractsApi.listManagedLots({
         page,
         page_size: pageSize,
         status: activeTab,
         ordering: '-updated_at',
-      }),
+        ...filterParams,
+      });
+    },
     enabled: !isRequestTab,
   });
 
@@ -134,6 +142,8 @@ export default function LogisticsShipmentsPage() {
   function handleTabChange(value: string) {
     setActiveTab(value as TabKey);
     setPage(1);
+    setRequestFilters([]);
+    setLotFilters([]);
   }
 
   const columns: Column<ShipmentRequest>[] = useMemo(() => {
@@ -142,11 +152,15 @@ export default function LogisticsShipmentsPage() {
         key: 'lot_number',
         header: 'Nº Lote',
         width: '140px',
+        filterable: true,
+        filterType: 'text',
         render: (row) => row.lot_number || '-',
       },
       {
         key: 'producer_name',
         header: 'Produtor',
+        filterable: true,
+        filterType: 'text',
         render: (row) => row.producer_name || '-',
       },
       {
@@ -213,17 +227,27 @@ export default function LogisticsShipmentsPage() {
         key: 'lot_number',
         header: 'Nº Lote',
         width: '140px',
+        filterable: true,
+        filterType: 'text',
         render: (row) => row.base_lot_data?.lot_number ?? '-',
       },
       {
         key: 'producer_name',
         header: 'Produtor',
+        filterable: true,
+        filterType: 'text',
         render: (row) => row.base_lot_data?.producer_name ?? '-',
       },
       {
         key: 'product',
         header: 'Produto',
         width: '140px',
+        filterable: true,
+        filterType: 'select',
+        filterOptions: [
+          { label: 'Soja', value: 'SOJA' },
+          { label: 'Milho', value: 'MILHO' },
+        ],
         render: (row) => row.base_lot_data?.product ?? '-',
       },
       {
@@ -237,6 +261,14 @@ export default function LogisticsShipmentsPage() {
         header: 'Saldo (kg)',
         width: '120px',
         render: (row) => formatKg(row.base_lot_data?.remaining_kg),
+      },
+      {
+        key: 'harvest_year',
+        header: 'Safra',
+        width: '90px',
+        filterable: true,
+        filterType: 'text',
+        render: (row) => row.harvest_year || '-',
       },
       {
         key: 'status',
@@ -299,6 +331,8 @@ export default function LogisticsShipmentsPage() {
           data={requestsQuery.data?.results ?? []}
           totalItems={totalItems}
           currentPage={page}
+          filters={requestFilters}
+          onFilterChange={(f) => { setRequestFilters(f); setPage(1); }}
           pagination={{
             enabled: true,
             pageSize,
@@ -312,6 +346,8 @@ export default function LogisticsShipmentsPage() {
           data={lotsQuery.data?.results ?? []}
           totalItems={totalItems}
           currentPage={page}
+          filters={lotFilters}
+          onFilterChange={(f) => { setLotFilters(f); setPage(1); }}
           pagination={{
             enabled: true,
             pageSize,

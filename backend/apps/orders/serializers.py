@@ -11,7 +11,7 @@ from apps.core.serializers import (
 )
 from apps.invoices.serializers import NFFutureDeliverySerializer
 
-from .models import LoadingOrder, SalesOrder
+from .models import LoadingOrder, SalesOrder, SalesOrderComment
 
 
 class LoadingOrderSerializer(serializers.ModelSerializer):
@@ -184,3 +184,17 @@ class SalesOrderSerializer(serializers.ModelSerializer):
             'invalidated_at',
             'invalidated_by',
         ]
+
+
+class SalesOrderCommentSerializer(serializers.ModelSerializer):
+    user_display = serializers.SerializerMethodField()
+
+    def get_user_display(self, obj) -> str:
+        if obj.user:
+            return obj.user.get_full_name() or obj.user.username
+        return 'Sistema'
+
+    class Meta:
+        model = SalesOrderComment
+        fields = ['id', 'sales_order', 'user', 'user_display', 'text', 'created_at']
+        read_only_fields = ['id', 'user', 'user_display', 'created_at']

@@ -85,6 +85,7 @@ class ContractManagedLotViewSet(viewsets.ModelViewSet):
     queryset = ContractManagedLot.objects.select_related(
         'base_lot', 'commercial_responsible', 'terminal_destination',
         'transshipment_location', 'participant', 'billing_branch',
+        'billing_branch__cif_transportadora',
     )
     serializer_class = ContractManagedLotSerializer
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
@@ -127,10 +128,26 @@ class ContractManagedLotViewSet(viewsets.ModelViewSet):
         return response
 
     def get_queryset(self):
+        from django.db.models import Q
         qs = super().get_queryset()
         status_param = self.request.query_params.get('status')
         if status_param:
             qs = qs.filter(status=status_param)
+        lot_number = self.request.query_params.get('lot_number')
+        if lot_number:
+            qs = qs.filter(base_lot__lot_number__icontains=lot_number)
+        producer_name = self.request.query_params.get('producer_name')
+        if producer_name:
+            qs = qs.filter(
+                Q(base_lot__producer_name__icontains=producer_name) |
+                Q(billing_producer_name__icontains=producer_name)
+            )
+        harvest_year = self.request.query_params.get('harvest_year')
+        if harvest_year:
+            qs = qs.filter(harvest_year__icontains=harvest_year)
+        product = self.request.query_params.get('product')
+        if product:
+            qs = qs.filter(base_lot__product__icontains=product)
         return qs
 
     @action(detail=True, methods=['post'], url_path='split')
