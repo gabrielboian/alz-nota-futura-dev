@@ -358,6 +358,8 @@ export function ShipmentWizard({
         errs.delivery_window_end = 'Data final deve ser ≥ inicial.';
       }
       if (isApprove) {
+        if (!form.collection_point_code.trim()) errs.collection_point_code = 'Informe o código ponto de coleta.';
+        if (!form.freight_type_exit) errs.freight_type_exit = 'Selecione o tipo de frete saída.';
         if (!form.rfl_value_kg || Number(form.rfl_value_kg) <= 0) {
           errs.rfl_value_kg = 'Informe o valor de pauta RFL.';
         }
@@ -841,7 +843,7 @@ function Step3({
       {showLogistics && (
         <>
           <div>
-            <Label>Código Ponto de Coleta</Label>
+            <Label required>Código Ponto de Coleta</Label>
             <input
               type="text"
               value={form.collection_point_code}
@@ -866,7 +868,7 @@ function Step3({
             <FieldError msg={fieldErrors.loading_state_registration} />
           </div>
           <div>
-            <Label>Tipo Frete Saída</Label>
+            <Label required>Tipo Frete Saída</Label>
             <select
               value={form.freight_type_exit ?? ''}
               onChange={(e) => handleFreightTypeChange(e.target.value || null)}

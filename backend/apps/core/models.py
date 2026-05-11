@@ -66,10 +66,10 @@ class TerminalDestination(TimestampedModel):
 
     name = models.CharField(_('Nome Terminal'), max_length=200, unique=True)
     is_transshipment = models.BooleanField(_('Local de transbordo?'), default=False)
-    sap_client_code = models.CharField(_('Código SAP Cliente'), max_length=20, blank=True, default='')
-    sap_supplier_code = models.CharField(_('Código SAP Fornecedor'), max_length=20, blank=True, default='')
+    sap_client_code = models.CharField(_('Código SAP Cliente'), max_length=20, default='')
+    sap_supplier_code = models.CharField(_('Código SAP Fornecedor'), max_length=20, default='')
     customs_facility_code = models.CharField(
-        _('Código Recinto Alfandegado'), max_length=30, blank=True, default=''
+        _('Código Recinto Alfandegado'), max_length=30, default=''
     )
 
     history = HistoricalRecords()
@@ -108,7 +108,7 @@ class Participant(TimestampedModel):
     name = models.CharField(_('Nome Participante'), max_length=200)
     sap_code = models.CharField(_('Código SAP'), max_length=20, blank=True, default='')
     inscricao_estadual = models.CharField(_('Inscrição Estadual'), max_length=30, blank=True, default='')
-    cnpj = models.CharField('CNPJ', max_length=18, blank=True, default='')
+    cnpj = models.CharField('CNPJ', max_length=18, default='')
 
     history = HistoricalRecords()
 
@@ -153,8 +153,8 @@ class ExitFreightType(TimestampedModel):
     """Tipo de Frete Saída — lookup para o campo tipo_frete_saida no lote gerenciado."""
 
     name = models.CharField(_('Nome'), max_length=100, unique=True)
-    incoterm = models.CharField(_('Incoterm'), max_length=10, blank=True, default='')
-    loc_incoterm = models.CharField(_('Incoterm local'), max_length=50, blank=True, default='')
+    incoterm = models.CharField(_('Incoterm'), max_length=10, default='')
+    loc_incoterm = models.CharField(_('Incoterm local'), max_length=50, default='')
     description_short = models.CharField(_('Descrição Rápida'), max_length=300, blank=True, default='')
     description = models.TextField(_('Descrição'), blank=True, default='')
 

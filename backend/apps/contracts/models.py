@@ -146,7 +146,6 @@ class ContractManagedLot(TimestampedModel):
     collection_point_code = models.CharField(
         _('Código Ponto de Coleta'),
         max_length=50,
-        blank=True,
         default='',
         help_text=_('Código fornecedor SAP do local de carregamento (buscar na XK03 pela inscrição estadual).'),
     )
@@ -160,7 +159,6 @@ class ContractManagedLot(TimestampedModel):
         'core.ExitFreightType',
         on_delete=models.SET_NULL,
         null=True,
-        blank=True,
         related_name='managed_lots',
         verbose_name=_('Tipo Frete Saída'),
     )
